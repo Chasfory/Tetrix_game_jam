@@ -5,8 +5,12 @@
 ** play
 */
 
+
 #include <iostream>
-#include <algorithm>
+#include <iostream>
+#include <cstring>
+#include <string>
+#include <iostream>
 #include <cmath>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -241,6 +245,7 @@ int main() {
     int hold;
     int move_x;
     int rotate;
+    int score;
     int color;
     int harddrop;
     int holded;
@@ -1039,7 +1044,10 @@ int main() {
                             board[checkLine][j] = board[i][j];
                         }
                         if(count < WIDTH) checkLine--;
-                        else line_clear_count++;
+                        else {
+                            line_clear_count++;
+                            score++;
+                        }
                     }
                     if(line_clear_count != 0) {
 
@@ -1832,7 +1840,10 @@ int main() {
                             board_bis[checkLine_bis][j] = board_bis[i][j];
                         }
                         if(count_bis < WIDTH) checkLine_bis--;
-                        else line_clear_count_bis++;
+                        else {
+                            line_clear_count_bis++;
+                            score++;
+                        }
                     }
                     if(line_clear_count_bis != 0) {
 
@@ -2088,6 +2099,18 @@ int main() {
             backboard_shape_bis.setFillColor(Color::White);
             backboard_shape_bis.setPosition(790, 10 + board_wobble_bis);
             window.draw(backboard_shape_bis);
+
+            sf::Text text;
+            sf::Font font;
+            font.loadFromFile("arial.ttf");
+            text.setFont(font);
+            std::string string_score = std::to_string(score);
+            text.setString(string_score);
+            text.setCharacterSize(30);
+            text.setFillColor(sf::Color::Red);
+            text.setStyle(sf::Text::Bold | sf::Text::Underlined);
+            text.setPosition(600, 700);
+            window.draw(text);
 
             window.display();
 
