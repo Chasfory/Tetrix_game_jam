@@ -29,6 +29,7 @@ const int FRAMERATE = 75;
 #define T_TETROMINO 6
 
 int board[HEIGHT][WIDTH] = {0};
+int board_bis[HEIGHT][WIDTH] = {0};
 
 vector <int> generateNewBag() {
 
@@ -75,9 +76,9 @@ class Piece {
 };
 
 Piece piece[4], cache[4], ghost[4];
+Piece piece_bis[4], cache_bis[4], ghost_bis[4];
 
 int pieces[7][4] = {
-
     {3, 4, 5, 6},
     {2, 4, 6, 7},
     {2, 3, 4, 5},
@@ -96,6 +97,7 @@ class PieceLock {
     double animation = 0;
 };
 vector <vector <PieceLock>> pieces_lock;
+vector <vector <PieceLock>> pieces_lock_bis;
 
 class Particle {
 
@@ -132,6 +134,7 @@ class Particle {
     }
 };
 vector <Particle> particles;
+vector <Particle> particles_bis;
 
 int sign(int num) {
 
@@ -155,6 +158,9 @@ bool isCollidedGhost() {
 
         if(ghost[i].y >= HEIGHT) return false;
         else if(board[ghost[i].y][ghost[i].x]) return false;
+
+        if(ghost_bis[i].y >= HEIGHT) return false;
+        else if(board_bis[ghost_bis[i].y][ghost_bis[i].x]) return false;
     }
     return 1;
 }
@@ -165,6 +171,9 @@ bool isCollided() {
 
         if(piece[i].x < 0 || piece[i].x >= WIDTH || piece[i].y >= HEIGHT) return false;
         else if(board[piece[i].y][piece[i].x]) return false;
+
+        if(piece_bis[i].x < 0 || piece_bis[i].x >= WIDTH || piece_bis[i].y >= HEIGHT) return false;
+        else if(board_bis[piece_bis[i].y][piece_bis[i].x]) return false;
     }
     return 1;
 }
@@ -172,6 +181,7 @@ bool isCollided() {
 bool isDead() {
 
     for(int i = 0; i < 4; i++) if(board[piece[i].y][piece[i].x]) return true;
+    for(int i = 0; i < 4; i++) if(board_bis[piece_bis[i].y][piece_bis[i].x]) return true;
     return false;
 }
 
@@ -179,196 +189,12 @@ int main() {
 
     srand(time(0));
 
-    RenderWindow window(VideoMode(600, 720), "TETRIS!", Style::Close);
+    RenderWindow window(VideoMode(1300, 800), "TETRIS!", Style::Close);
 
-    ////Sound
-    //Sound sfx_clearline; SoundBuffer buffer_clearline;
-    //buffer_clearline.loadFromFile("../resource/sound/clearline.ogg");
-    //sfx_clearline.setBuffer(buffer_clearline);
-//
-    //Sound sfx_clearquad; SoundBuffer buffer_clearquad;
-    //buffer_clearquad.loadFromFile("../resource/sound/clearquad.ogg");
-    //sfx_clearquad.setBuffer(buffer_clearquad);
-//
-    //Sound sfx_clearspin; SoundBuffer buffer_clearspin;
-    //buffer_clearspin.loadFromFile("../resource/sound/clearspin.ogg");
-    //sfx_clearspin.setBuffer(buffer_clearspin);
-//
-    //Sound sfx_clearbtb; SoundBuffer buffer_clearbtb;
-    //buffer_clearbtb.loadFromFile("../resource/sound/clearbtb.ogg");
-    //sfx_clearbtb.setBuffer(buffer_clearbtb);
-//
-    //Sound sfx_btb_break; SoundBuffer buffer_btb_break;
-    //buffer_btb_break.loadFromFile("../resource/sound/btb_break.ogg");
-    //sfx_btb_break.setBuffer(buffer_btb_break);
-//
-    //Sound sfx_combo_1; SoundBuffer buffer_combo_1;
-    //buffer_combo_1.loadFromFile("../resource/sound/combo_1.ogg");
-    //sfx_combo_1.setBuffer(buffer_combo_1);
-//
-    //Sound sfx_combo_2; SoundBuffer buffer_combo_2;
-    //buffer_combo_2.loadFromFile("../resource/sound/combo_2.ogg");
-    //sfx_combo_2.setBuffer(buffer_combo_2);
-//
-    //Sound sfx_combo_3; SoundBuffer buffer_combo_3;
-    //buffer_combo_3.loadFromFile("../resource/sound/combo_3.ogg");
-    //sfx_combo_3.setBuffer(buffer_combo_3);
-//
-    //Sound sfx_combo_4; SoundBuffer buffer_combo_4;
-    //buffer_combo_4.loadFromFile("../resource/sound/combo_4.ogg");
-    //sfx_combo_4.setBuffer(buffer_combo_4);
-//
-    //Sound sfx_combo_5; SoundBuffer buffer_combo_5;
-    //buffer_combo_5.loadFromFile("../resource/sound/combo_5.ogg");
-    //sfx_combo_5.setBuffer(buffer_combo_5);
-//
-    //Sound sfx_combo_6; SoundBuffer buffer_combo_6;
-    //buffer_combo_6.loadFromFile("../resource/sound/combo_6.ogg");
-    //sfx_combo_6.setBuffer(buffer_combo_6);
-//
-    //Sound sfx_combo_7; SoundBuffer buffer_combo_7;
-    //buffer_combo_7.loadFromFile("../resource/sound/combo_7.ogg");
-    //sfx_combo_7.setBuffer(buffer_combo_7);
-//
-    //Sound sfx_combo_8; SoundBuffer buffer_combo_8;
-    //buffer_combo_8.loadFromFile("../resource/sound/combo_8.ogg");
-    //sfx_combo_8.setBuffer(buffer_combo_8);
-//
-    //Sound sfx_combo_9; SoundBuffer buffer_combo_9;
-    //buffer_combo_9.loadFromFile("../resource/sound/combo_9.ogg");
-    //sfx_combo_9.setBuffer(buffer_combo_9);
-//
-    //Sound sfx_combo_10; SoundBuffer buffer_combo_10;
-    //buffer_combo_10.loadFromFile("../resource/sound/combo_10.ogg");
-    //sfx_combo_10.setBuffer(buffer_combo_10);
-//
-    //Sound sfx_combo_11; SoundBuffer buffer_combo_11;
-    //buffer_combo_11.loadFromFile("../resource/sound/combo_11.ogg");
-    //sfx_combo_11.setBuffer(buffer_combo_11);
-//
-    //Sound sfx_combo_12; SoundBuffer buffer_combo_12;
-    //buffer_combo_12.loadFromFile("../resource/sound/combo_12.ogg");
-    //sfx_combo_12.setBuffer(buffer_combo_12);
-//
-    //Sound sfx_combo_13; SoundBuffer buffer_combo_13;
-    //buffer_combo_13.loadFromFile("../resource/sound/combo_13.ogg");
-    //sfx_combo_13.setBuffer(buffer_combo_13);
-//
-    //Sound sfx_combo_14; SoundBuffer buffer_combo_14;
-    //buffer_combo_14.loadFromFile("../resource/sound/combo_14.ogg");
-    //sfx_combo_14.setBuffer(buffer_combo_14);
-//
-    //Sound sfx_combo_15; SoundBuffer buffer_combo_15;
-    //buffer_combo_15.loadFromFile("../resource/sound/combo_15.ogg");
-    //sfx_combo_15.setBuffer(buffer_combo_15);
-//
-    //Sound sfx_combo_16; SoundBuffer buffer_combo_16;
-    //buffer_combo_16.loadFromFile("../resource/sound/combo_16.ogg");
-    //sfx_combo_16.setBuffer(buffer_combo_16);
-//
-    //Sound sfx_combo_1_power; SoundBuffer buffer_combo_1_power;
-    //buffer_combo_1_power.loadFromFile("../resource/sound/combo_1_power.ogg");
-    //sfx_combo_1_power.setBuffer(buffer_combo_1_power);
-//
-    //Sound sfx_combo_2_power; SoundBuffer buffer_combo_2_power;
-    //buffer_combo_2_power.loadFromFile("../resource/sound/combo_2_power.ogg");
-    //sfx_combo_2_power.setBuffer(buffer_combo_2_power);
-//
-    //Sound sfx_combo_3_power; SoundBuffer buffer_combo_3_power;
-    //buffer_combo_3_power.loadFromFile("../resource/sound/combo_3_power.ogg");
-    //sfx_combo_3_power.setBuffer(buffer_combo_3_power);
-//
-    //Sound sfx_combo_4_power; SoundBuffer buffer_combo_4_power;
-    //buffer_combo_4_power.loadFromFile("../resource/sound/combo_4_power.ogg");
-    //sfx_combo_4_power.setBuffer(buffer_combo_4_power);
-//
-    //Sound sfx_combo_5_power; SoundBuffer buffer_combo_5_power;
-    //buffer_combo_5_power.loadFromFile("../resource/sound/combo_5_power.ogg");
-    //sfx_combo_5_power.setBuffer(buffer_combo_5_power);
-//
-    //Sound sfx_combo_6_power; SoundBuffer buffer_combo_6_power;
-    //buffer_combo_6_power.loadFromFile("../resource/sound/combo_6_power.ogg");
-    //sfx_combo_6_power.setBuffer(buffer_combo_6_power);
-//
-    //Sound sfx_combo_7_power; SoundBuffer buffer_combo_7_power;
-    //buffer_combo_7_power.loadFromFile("../resource/sound/combo_7_power.ogg");
-    //sfx_combo_7_power.setBuffer(buffer_combo_7_power);
-//
-    //Sound sfx_combo_8_power; SoundBuffer buffer_combo_8_power;
-    //buffer_combo_8_power.loadFromFile("../resource/sound/combo_8_power.ogg");
-    //sfx_combo_8_power.setBuffer(buffer_combo_8_power);
-//
-    //Sound sfx_combo_9_power; SoundBuffer buffer_combo_9_power;
-    //buffer_combo_9_power.loadFromFile("../resource/sound/combo_9_power.ogg");
-    //sfx_combo_9_power.setBuffer(buffer_combo_9_power);
-//
-    //Sound sfx_combo_10_power; SoundBuffer buffer_combo_10_power;
-    //buffer_combo_10_power.loadFromFile("../resource/sound/combo_10_power.ogg");
-    //sfx_combo_10_power.setBuffer(buffer_combo_10_power);
-//
-    //Sound sfx_combo_11_power; SoundBuffer buffer_combo_11_power;
-    //buffer_combo_11_power.loadFromFile("../resource/sound/combo_11_power.ogg");
-    //sfx_combo_11_power.setBuffer(buffer_combo_11_power);
-//
-    //Sound sfx_combo_12_power; SoundBuffer buffer_combo_12_power;
-    //buffer_combo_12_power.loadFromFile("../resource/sound/combo_12_power.ogg");
-    //sfx_combo_12_power.setBuffer(buffer_combo_12_power);
-//
-    //Sound sfx_combo_13_power; SoundBuffer buffer_combo_13_power;
-    //buffer_combo_13_power.loadFromFile("../resource/sound/combo_13_power.ogg");
-    //sfx_combo_13_power.setBuffer(buffer_combo_13_power);
-//
-    //Sound sfx_combo_14_power; SoundBuffer buffer_combo_14_power;
-    //buffer_combo_14_power.loadFromFile("../resource/sound/combo_14_power.ogg");
-    //sfx_combo_14_power.setBuffer(buffer_combo_14_power);
-//
-    //Sound sfx_combo_15_power; SoundBuffer buffer_combo_15_power;
-    //buffer_combo_15_power.loadFromFile("../resource/sound/combo_15_power.ogg");
-    //sfx_combo_15_power.setBuffer(buffer_combo_15_power);
-//
-    //Sound sfx_combo_16_power; SoundBuffer buffer_combo_16_power;
-    //buffer_combo_16_power.loadFromFile("../resource/sound/combo_16_power.ogg");
-    //sfx_combo_16_power.setBuffer(buffer_combo_16_power);
-//
-    //Sound sfx_combobreak; SoundBuffer buffer_combobreak;
-    //buffer_combobreak.loadFromFile("../resource/sound/combobreak.ogg");
-    //sfx_combobreak.setBuffer(buffer_combobreak);
-//
-    //Sound sfx_move; SoundBuffer buffer_move;
-    //buffer_move.loadFromFile("../resource/sound/move.ogg");
-    //sfx_move.setBuffer(buffer_move);
-//
-    //Sound sfx_rotate; SoundBuffer buffer_rotate;
-    //buffer_rotate.loadFromFile("../resource/sound/rotate.ogg");
-    //sfx_rotate.setBuffer(buffer_rotate);
-//
-    //Sound sfx_spin; SoundBuffer buffer_spin;
-    //buffer_spin.loadFromFile("../resource/sound/spin.ogg");
-    //sfx_spin.setBuffer(buffer_spin);
-//
-    //Sound sfx_hold; SoundBuffer buffer_hold;
-    //buffer_hold.loadFromFile("../resource/sound/hold.ogg");
-    //sfx_hold.setBuffer(buffer_hold);
-//
-    //Sound sfx_harddrop; SoundBuffer buffer_harddrop;
-    //buffer_harddrop.loadFromFile("../resource/sound/harddrop.ogg");
-    //sfx_harddrop.setBuffer(buffer_harddrop);
-//
-    //Sound sfx_hit; SoundBuffer buffer_hit;
-    //buffer_hit.loadFromFile("../resource/sound/hit.ogg");
-    //sfx_hit.setBuffer(buffer_hit);
-//
-    //Sound sfx_floor; SoundBuffer buffer_floor;
-    //buffer_floor.loadFromFile("../resource/sound/floor.ogg");
-    //sfx_floor.setBuffer(buffer_floor);
-//
-    //Sound sfx_sidehit; SoundBuffer buffer_sidehit;
-    //buffer_sidehit.loadFromFile("../resource/sound/sidehit.ogg");
-    //sfx_sidehit.setBuffer(buffer_sidehit);
-//
-    //Sound sfx_allclear; SoundBuffer buffer_allclear;
-    //buffer_allclear.loadFromFile("../resource/sound/allclear.ogg");
-    //sfx_allclear.setBuffer(buffer_allclear);
+    //Sound
+    Sound sfx_music; SoundBuffer buffer_music;
+    buffer_music.loadFromFile("Music/music.ogg");
+    sfx_music.setBuffer(buffer_music);
 
     //Pieces
     Texture t;
@@ -388,10 +214,15 @@ int main() {
     board_t.loadFromFile("Sprites/board.png");
     Sprite board_s(board_t);
 
+    Texture board_bis_t;
+    board_bis_t.loadFromFile("Sprites/board.png");
+    Sprite board_bis_s(board_t);
+
     int hold;
     int move_x;
     int rotate;
     int color;
+    int color_bis;
     int harddrop;
     int holded;
     int move_left;
@@ -427,6 +258,10 @@ int main() {
         for(int j = 0; j < WIDTH; j++)
             board[i][j] = 0;
 
+    for(int i = 0; i < HEIGHT; i++)
+        for(int j = 0; j < WIDTH; j++)
+            board_bis[i][j] = 0;
+
     start = 3;
     timer = 0;
     delay = 0.5;
@@ -442,6 +277,7 @@ int main() {
     seven_bag_next = generateNewBag();
 
     double piece_indicator_shape_alpha = 0;
+    double piece_indicator_shape_alpha_bis = 0;
     double board_wobble = 0;
 
     int line_clear_combo = 0;
@@ -449,9 +285,11 @@ int main() {
 
     //Choose First Piece
     int choose_piece = seven_bag.at(0);
+    int choose_piece_bis = seven_bag.at(0);
     seven_bag.erase(seven_bag.begin());
 
     color = choose_piece;
+    color_bis = choose_piece_bis;
     for(int i = 0; i < 4; i++) {
 
         piece[i].x = pieces[choose_piece][i] % 2 + 4;
@@ -459,6 +297,12 @@ int main() {
         piece[i].rotation = 0;
 
         if(color == J_TETROMINO) piece[i].x --;
+
+        piece_bis[i].x = pieces[choose_piece_bis][i] % 2 + 4;
+        piece_bis[i].y = pieces[choose_piece_bis][i] / 2 + 3;
+        piece_bis[i].rotation = 0;
+
+        if(color_bis == J_TETROMINO) piece_bis[i].x --;
     }
     for(int i = 0; i < 4; i++) {
 
@@ -469,6 +313,14 @@ int main() {
         if(color == Z_TETROMINO) piece[i].Rotate(center, -1);
         if(color == L_TETROMINO) piece[i].Rotate(center, -1);
         if(color == J_TETROMINO) piece[i].Rotate(center, 1);
+
+        Piece center_bis = piece_bis[1];
+        if(color_bis == I_TETROMINO) piece[i].Rotate(center_bis, 1);
+        if(color_bis == T_TETROMINO) piece[i].Rotate(center_bis, -1);
+        if(color_bis == S_TETROMINO) piece[i].Rotate(center_bis, -1);
+        if(color_bis == Z_TETROMINO) piece[i].Rotate(center_bis, -1);
+        if(color_bis == L_TETROMINO) piece[i].Rotate(center_bis, -1);
+        if(color_bis == J_TETROMINO) piece[i].Rotate(center_bis, 1);
     }
 
     int is_rotate_cw = 0;
@@ -492,14 +344,17 @@ int main() {
     int last_key = 0;
     int key_restart = 0;
 
+    sfx_music.play();
+
     while(window.isOpen()) {
 
         float time = clock.getElapsedTime().asSeconds();
 
         for(int i = 0; i < 4; i++) {
-
             cache[i] = piece[i];
             piece[i].y ++;
+            cache_bis[i] = piece_bis[i];
+            piece_bis[i].y ++;
         }
         if(!isCollided()) {
             lock_delay_value -= time;
@@ -507,12 +362,12 @@ int main() {
             if(lock_delay_value <= 0) {
 
                 for(int i = 0; i < 4; i++) piece[i] = cache[i];
+                for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 goto makeNewPiece;
             }
             if(is_touch_ground == 0) {
 
                 is_touch_ground = 1;
-                //sfx_hit.play();
             }
         }
         else {
@@ -520,6 +375,7 @@ int main() {
             is_touch_ground = 0;
         }
         for(int i = 0; i < 4; i++) piece[i] = cache[i];
+        for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
 
         timer += time;
         clock.restart();
@@ -605,96 +461,77 @@ int main() {
 
                     cache[i] = piece[i];
                     piece[i].x += 1;
+                    cache_bis[i] = piece_bis[i];
+                    piece_bis[i].x += 1;
                 }
 
                 if(!isCollided()) for(int i = 0; i < 4; i++) piece[i] = cache[i];
+                if(!isCollided()) for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 else {
-
-                    //sfx_move.play();
                     if(lock_count_value > 0) {
-
                         lock_count_value--;
                         lock_delay_value = lock_delay;
                     }
                 }
-
                 das_value = das;
             }
             if(move_left) {
-
                 for(int i = 0; i < 4; i++) {
-
                     cache[i] = piece[i];
                     piece[i].x -= 1;
+                    cache_bis[i] = piece_bis[i];
+                    piece_bis[i].x -= 1;
                 }
-
                 if(!isCollided()) for(int i = 0; i < 4; i++) piece[i] = cache[i];
+                if(!isCollided()) for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 else {
-
-                    //sfx_move.play();
                     if(lock_count_value > 0) {
-
                         lock_count_value--;
                         lock_delay_value = lock_delay;
                     }
                 }
-
                 das_value = das;
             }
 
             if(das_value <= 0) {
-
                 for(int i = 0; i < 4; i++) {
-
                     cache[i] = piece[i];
                     piece[i].x += sign(key_right - key_left);
+                    cache_bis[i] = piece_bis[i];
+                    piece_bis[i].x += sign(key_right - key_left);
                 }
-
                 if(!isCollided()) {
-
                     if(is_sidehit == 0) {
-
                         is_sidehit = 1;
-                        //sfx_sidehit.play();
                     }
                     for(int i = 0; i < 4; i++) piece[i] = cache[i];
+                    for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 }
                 else {
-
                     is_sidehit = 0;
                     if(lock_count_value > 0) {
-
                         lock_count_value--;
                         lock_delay_value = lock_delay;
                     }
-
-                    //sfx_move.play();
                 }
             }
             das_value -= clock.getElapsedTime().asSeconds() * 75;
-
             //Hold
             if(holded) {
-
-                //sfx_hold.play();
-
                 if(hold == -1) {
-
                     hold = color;
                     color = -1;
-
                     while(isCollided()) {
-
                         for(int i = 0; i < 4; i++) piece[i].y ++;
+                        for(int i = 0; i < 4; i++) piece_bis[i].y ++;
                     }
-
                     for(int i = 0; i < 4; i++) piece[i].y --;
+                    for(int i = 0; i < 4; i++) piece_bis[i].y --;
                     lock_delay_value = -1;
                     timer = 0;
                     goto makeNewPiece;
                 }
                 else {
-
                     int temp;
                     temp = color;
                     color = hold;
@@ -702,16 +539,21 @@ int main() {
                     timer = 0;
                     lock_count_value = lock_count;
                     lock_delay_value = lock_delay;
-
                     choose_piece = color;
                     for(int i = 0; i < 4; i++) {
-
                         piece[i].x = pieces[choose_piece][i] % 2 + 4;
                         piece[i].y = pieces[choose_piece][i] / 2 + 2;
                         piece[i].rotation = 0;
 
                         if(color == J_TETROMINO) piece[i].x --;
                         if(color == I_TETROMINO) piece[i].y ++;
+
+                        piece_bis[i].x = pieces[choose_piece_bis][i] % 2 + 4;
+                        piece_bis[i].y = pieces[choose_piece_bis][i] / 2 + 2;
+                        piece_bis[i].rotation = 0;
+
+                        if(color == J_TETROMINO) piece_bis[i].x --;
+                        if(color == I_TETROMINO) piece_bis[i].y ++;
                     }
                     for(int i = 0; i < 4; i++) {
 
@@ -723,22 +565,29 @@ int main() {
                         if(color == L_TETROMINO) piece[i].Rotate(center, -1);
                         if(color == J_TETROMINO) piece[i].Rotate(center, 1);
                         piece[i].rotation = 1;
+
+                        Piece center_bis = piece_bis[1];
+                        if(color_bis == I_TETROMINO) piece_bis[i].Rotate(center_bis, 1);
+                        if(color_bis == T_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == S_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == Z_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == L_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == J_TETROMINO) piece_bis[i].Rotate(center_bis, 1);
+                        piece_bis[i].rotation = 1;
                     }
                 }
             }
 
             //HardDrop
             if(harddrop && start <= 0) {
-
                 while(isCollided()) {
-
                     for(int i = 0; i < 4; i++) piece[i].y ++;
+                    for(int i = 0; i < 4; i++) piece_bis[i].y ++;
                     createParticle(&particles);
                 }
-
                 for(int i = 0; i < 4; i++) piece[i].y --;
+                for(int i = 0; i < 4; i++) piece_bis[i].y --;
                 lock_delay_value = -1;
-                //sfx_harddrop.play();
                 goto makeNewPiece;
             }
 
@@ -746,10 +595,13 @@ int main() {
             if(rotate != 0) {
 
                 int before_rotation, after_rotation;
+                int before_rotation_bis, after_rotation_bis;
                 for(int i = 0; i < 4; i++) {
 
                     cache[i] = piece[i];
                     before_rotation = piece[i].rotation;
+                    cache_bis[i] = piece_bis[i];
+                    before_rotation_bis = piece_bis[i].rotation;
                     if(color == I_TETROMINO) {
 
                         if(piece[i].rotation == 1) {
@@ -806,12 +658,246 @@ int main() {
                         }
                         piece[i].rotation += rotate;
                     }
+                    if(color_bis == I_TETROMINO) {
+
+                        if(piece_bis[i].rotation == 1) {
+
+                            if(rotate == 1) {
+                                if(i == 0) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
+                                if(i == 2) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
+                                if(i == 3) { piece_bis[i].x+=2, piece_bis[i].y+=2; };
+                            }
+                            else {
+                                if(i == 0) { piece_bis[i].x-=2, piece_bis[i].y+=2; };
+                                if(i == 1) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
+                                if(i == 3) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
+                            }
+                        }
+                        if(piece_bis[i].rotation == 2) {
+
+                            if(rotate == 1) {
+                                if(i == 0) { piece_bis[i].x-=2, piece_bis[i].y+=2; };
+                                if(i == 1) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
+                                if(i == 3) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
+                            }
+                            else {
+                                if(i == 0) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
+                                if(i == 2) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
+                                if(i == 3) { piece_bis[i].x-=2, piece_bis[i].y-=2; };
+                            }
+                        }
+                        if(piece_bis[i].rotation == 3) {
+
+                            if(rotate == 1) {
+                                if(i == 0) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
+                                if(i == 2) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
+                                if(i == 3) { piece_bis[i].x-=2, piece_bis[i].y-=2; };
+                            }
+                            else {
+                                if(i == 0) { piece_bis[i].x+=2, piece_bis[i].y-=2; };
+                                if(i == 1) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
+                                if(i == 3) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
+                            }
+                        }
+                        if(piece_bis[i].rotation == 4) {
+
+                            if(rotate == 1) {
+                                if(i == 0) { piece_bis[i].x+=2, piece_bis[i].y-=2; };
+                                if(i == 1) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
+                                if(i == 3) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
+                            }
+                            else {
+                                if(i == 0) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
+                                if(i == 2) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
+                                if(i == 3) { piece_bis[i].x+=2, piece_bis[i].y+=2; };
+                            }
+                        }
+                        piece_bis[i].rotation += rotate;
+                    }
                     else if(color != O_TETROMINO) piece[i].Rotate(piece[1], rotate);
+                    else if(color_bis != O_TETROMINO) piece_bis[i].Rotate(piece_bis[1], rotate);
 
                     if(piece[i].rotation > 4) piece[i].rotation = 1;
                     if(piece[i].rotation < 1) piece[i].rotation = 4;
 
+                    if(piece_bis[i].rotation > 4) piece_bis[i].rotation = 1;
+                    if(piece_bis[i].rotation < 1) piece_bis[i].rotation = 4;
+
                     after_rotation = piece[i].rotation;
+                    after_rotation_bis = piece_bis[i].rotation;
+                }
+
+                Piece rotation_piece_bis[4];
+                if(color_bis != I_TETROMINO) {
+
+                    if((before_rotation_bis == 1 && after_rotation_bis == 2) || (before_rotation_bis == 3 && after_rotation_bis == 2)) { //1 >> 2 & 3 >> 2
+                        //TEST 2
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                rotation_piece_bis[i].x = piece_bis[i].x;
+                                rotation_piece_bis[i].y = piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += 0;
+                            }
+                        }
+                        //TEST 3
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += -1;
+                            }
+                        }
+                        //TEST 4
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 0;
+                                piece_bis[i].y += 2;
+                            }
+                        }
+                        //TEST 5
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += 2;
+                            }
+                        }
+                    }
+                    if((before_rotation_bis == 2 && after_rotation_bis == 1) || (before_rotation_bis == 2 && after_rotation_bis == 3)) { //2 >> 1 && 2 >> 3
+                        //TEST 2
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                rotation_piece_bis[i].x = piece_bis[i].x;
+                                rotation_piece_bis[i].y = piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += 0;
+                            }
+                        }
+                        //TEST 3
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += 1;
+                            }
+                        }
+                        //TEST 4
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 0;
+                                piece_bis[i].y += -2;
+                            }
+                        }
+                        //TEST 5
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += -2;
+                            }
+                        }
+                    }
+                    if((before_rotation_bis == 3 && after_rotation_bis == 4) || (before_rotation_bis == 1 && after_rotation_bis == 4)) { //3 >> 4 & 1 >> 4
+                        //TEST 2
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                rotation_piece_bis[i].x = piece_bis[i].x;
+                                rotation_piece_bis[i].y = piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += 0;
+                            }
+                        }
+                        //TEST 3
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += -1;
+                            }
+                        }
+                        //TEST 4
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 0;
+                                piece_bis[i].y += 2;
+                            }
+                        }
+                        //TEST 5
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += 2;
+                            }
+                        }
+                    }
+                    if((before_rotation_bis == 4 && after_rotation_bis == 3) || (before_rotation_bis == 4 && after_rotation_bis == 1)) { //4 >> 3 && 4 >> 1
+                        //TEST 2
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                rotation_piece_bis[i].x = piece_bis[i].x;
+                                rotation_piece_bis[i].y = piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += 0;
+                            }
+                        }
+                        //TEST 3
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += 1;
+                            }
+                        }
+                        //TEST 4
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 0;
+                                piece_bis[i].y += -2;
+                            }
+                        }
+                        //TEST 5
+                        if(!isCollided()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += -2;
+                            }
+                        }
+                    }
                 }
 
                 Piece rotation_piece[4];
@@ -988,6 +1074,7 @@ int main() {
                 }
 
                 if(!isCollided()) for(int i = 0; i < 4; i++) piece[i] = cache[i];
+                if(!isCollided()) for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 else {
 
                     if(lock_count_value > 0) {
@@ -995,8 +1082,6 @@ int main() {
                         lock_count_value--;
                         lock_delay_value = lock_delay;
                     }
-                    //sfx_rotate.play();
-
                     if(color == T_TETROMINO) {
 
                         int corner_count = 0;
@@ -1006,8 +1091,18 @@ int main() {
                         if(board[piece[1].y - 1][piece[1].x - 1] != 0 || piece[1].x - 1 < 0 || piece[1].y + 1 < 0) corner_count ++;
 
                         if(corner_count >= 3) {
+                            is_tspin = 1;
+                        }
+                    }
+                    if(color_bis == T_TETROMINO) {
 
-                            //sfx_spin.play();
+                        int corner_count_bis = 0;
+                        if(board_bis[piece_bis[1].y + 1][piece_bis[1].x + 1] != 0 || piece_bis[1].x + 1 >= WIDTH || piece_bis[1].y + 1 >= HEIGHT) corner_count_bis ++;
+                        if(board_bis[piece_bis[1].y + 1][piece_bis[1].x - 1] != 0 || piece_bis[1].x - 1 < 0 || piece_bis[1].y + 1 >= HEIGHT) corner_count_bis ++;
+                        if(board_bis[piece_bis[1].y - 1][piece_bis[1].x + 1] != 0 || piece_bis[1].x + 1 >= WIDTH || piece_bis[1].y - 1 < 0) corner_count_bis ++;
+                        if(board_bis[piece_bis[1].y - 1][piece_bis[1].x - 1] != 0 || piece_bis[1].x - 1 < 0 || piece_bis[1].y + 1 < 0) corner_count_bis ++;
+
+                        if(corner_count_bis >= 3) {
                             is_tspin = 1;
                         }
                     }
@@ -1020,9 +1115,10 @@ int main() {
                 makeNewPiece :
 
                 for(int i = 0; i < 4; i++) {
-
                     cache[i] = piece[i];
                     piece[i].y ++;
+                    cache_bis[i] = piece_bis[i];
+                    piece_bis[i].y ++;
                 }
 
                 if(!isCollided() && lock_delay_value < 0) {
@@ -1034,6 +1130,7 @@ int main() {
                         createParticle(&particles);
 
                         vector <PieceLock> piece_lock;
+                        vector <PieceLock> piece_lock_bis;
                         for(int i = 0; i < 4; i++) {
 
                             PieceLock piece_lock_one;
@@ -1041,19 +1138,25 @@ int main() {
                             piece_lock_one.y = piece[i].y;
 
                             piece_lock.push_back(piece_lock_one);
+
+                            PieceLock piece_lock_one_bis;
+                            piece_lock_one_bis.x = piece_bis[i].x;
+                            piece_lock_one_bis.y = piece_bis[i].y;
+
+                            piece_lock_bis.push_back(piece_lock_one_bis);
                         }
                         pieces_lock.push_back(piece_lock);
+                        pieces_lock_bis.push_back(piece_lock_bis);
 
                         board_wobble = 7;
                         all_piece_count ++;
                     }
 
                     if(!harddrop && !holded) {
-
-                        //sfx_floor.play();
                     }
 
                     for(int i = 0; i < 4; i++) board[cache[i].y][cache[i].x] = color + 1;
+                    for(int i = 0; i < 4; i++) board_bis[cache_bis[i].y][cache_bis[i].x] = color_bis + 1;
                     int choose_piece = seven_bag.at(0);
                     seven_bag.erase(seven_bag.begin());
                     if(seven_bag.size() == 0) {
@@ -1070,6 +1173,13 @@ int main() {
 
                         if(color == J_TETROMINO) piece[i].x --;
                         if(color == I_TETROMINO) piece[i].y ++;
+
+                        piece_bis[i].x = pieces[choose_piece_bis][i] % 2 + 4;
+                        piece_bis[i].y = pieces[choose_piece_bis][i] / 2 + 2;
+                        piece_bis[i].rotation = 0;
+
+                        if(color_bis == J_TETROMINO) piece_bis[i].x --;
+                        if(color_bis == I_TETROMINO) piece_bis[i].y ++;
                     }
                     for(int i = 0; i < 4; i++) {
 
@@ -1081,6 +1191,15 @@ int main() {
                         if(color == L_TETROMINO) piece[i].Rotate(center, -1);
                         if(color == J_TETROMINO) piece[i].Rotate(center, 1);
                         piece[i].rotation = 1;
+
+                        Piece center_bis = piece_bis[1];
+                        if(color_bis == I_TETROMINO) piece_bis[i].Rotate(center_bis, 1);
+                        if(color_bis == T_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == S_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == Z_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == L_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == J_TETROMINO) piece_bis[i].Rotate(center_bis, 1);
+                        piece_bis[i].rotation = 1;
                     }
 
                     lock_delay_value = lock_delay;
@@ -1097,6 +1216,7 @@ int main() {
 
                             if(board[i][j]) count++;
                             board[checkLine][j] = board[i][j];
+                            board_bis[checkLine][j] = board_bis[i][j];
                         }
                         if(count < WIDTH) checkLine--;
                         else line_clear_count++;
@@ -1105,66 +1225,21 @@ int main() {
 
                         line_clear_combo ++;
                         if(line_clear_count == 4 || is_tspin) {
-
                             btb_combo ++;
-                            //if(btb_combo > 1) sfx_clearbtb.play();
-                            //else {
-                            //    if(is_tspin) sfx_clearspin.play();
-                            //    else sfx_clearquad.play();
-                            //}
 
                             int combo = line_clear_combo - 1;
-                            //if(combo == 1) sfx_combo_1.play();
-                            //else if(combo == 2) sfx_combo_2.play();
-                            //else if(combo == 3) sfx_combo_3.play();
-                            //else if(combo == 4) sfx_combo_4_power.play();
-                            //else if(combo == 5) sfx_combo_5_power.play();
-                            //else if(combo == 6) sfx_combo_6_power.play();
-                            //else if(combo == 7) sfx_combo_7_power.play();
-                            //else if(combo == 8) sfx_combo_8_power.play();
-                            //else if(combo == 9) sfx_combo_9_power.play();
-                            //else if(combo == 10) sfx_combo_10_power.play();
-                            //else if(combo == 11) sfx_combo_11_power.play();
-                            //else if(combo == 12) sfx_combo_12_power.play();
-                            //else if(combo == 13) sfx_combo_13_power.play();
-                            //else if(combo == 14) sfx_combo_14_power.play();
-                            //else if(combo == 15) sfx_combo_15_power.play();
-                            //else if(combo >= 16) sfx_combo_16_power.play();
                         }
                         else {
 
                             if(btb_combo != 0) {
-
-                               // if(btb_combo > 1) sfx_btb_break.play();
-                               // btb_combo = 0;
+                               btb_combo = 0;
                             }
-
-                            //sfx_clearline.play();
-
                             int combo = line_clear_combo - 1;
-                            //if(combo == 1) sfx_combo_1.play();
-                            //else if(combo == 2) sfx_combo_2.play();
-                            //else if(combo == 3) sfx_combo_3.play();
-                            //else if(combo == 4) sfx_combo_4.play();
-                            //else if(combo == 5) sfx_combo_5.play();
-                            //else if(combo == 6) sfx_combo_6.play();
-                            //else if(combo == 7) sfx_combo_7.play();
-                            //else if(combo == 8) sfx_combo_8.play();
-                            //else if(combo == 9) sfx_combo_9.play();
-                            //else if(combo == 10) sfx_combo_10.play();
-                            //else if(combo == 11) sfx_combo_11.play();
-                            //else if(combo == 12) sfx_combo_12.play();
-                            //else if(combo == 13) sfx_combo_13.play();
-                            //else if(combo == 14) sfx_combo_14.play();
-                            //else if(combo == 15) sfx_combo_15.play();
-                            //else if(combo >= 16) sfx_combo_16.play();
                         }
 
                         all_line_count += line_clear_count;
                     }
                     else if(line_clear_combo != 0) {
-
-                        if(line_clear_combo > 3)// sfx_combobreak.play();
                         line_clear_combo = 0;
                     }
 
@@ -1172,15 +1247,15 @@ int main() {
                     for(int i = 0; i < HEIGHT; i++) {
                         for(int j = 0; j < WIDTH; j++) {
                             if(board[i][j] != 0) perfect_clear = 0;
+                            if(board_bis[i][j] != 0) perfect_clear = 0;
                         }
                     }
-                    if(perfect_clear && !holded)// sfx_allclear.play();
-
                     is_tspin = 0;
                 }
                 else if(!isCollided()) {
 
                     for(int i = 0; i < 4; i++) piece[i] = cache[i];
+                    for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 }
                 else {
 
@@ -1202,15 +1277,19 @@ int main() {
 
                 ghost[i].x = piece[i].x;
                 ghost[i].y = piece[i].y;
+                ghost_bis[i].x = piece_bis[i].x;
+                ghost_bis[i].y = piece_bis[i].y;
             }
             for(int i = 0; i < 4; i++) {
 
                 while(isCollidedGhost()) {
 
                     for(int i = 0; i < 4; i++) ghost[i].y ++;
+                    for(int i = 0; i < 4; i++) ghost_bis[i].y ++;
                 }
 
                 for(int i = 0; i < 4; i++) ghost[i].y --;
+                for(int i = 0; i < 4; i++) ghost_bis[i].y --;
             }
 
             move_x = 0;
@@ -1230,9 +1309,18 @@ int main() {
             backboard_shape.setPosition(140, 20 + board_wobble);
             window.draw(backboard_shape);
 
+            RectangleShape backboard_bis_shape;
+            backboard_bis_shape.setSize(Vector2f(320, 650));
+            backboard_bis_shape.setFillColor(Color::White);
+            backboard_bis_shape.setPosition(790, 20 + board_wobble);
+            window.draw(backboard_bis_shape);
+
             //Draw Grid
             board_s.setPosition(150, -30 + board_wobble);
             window.draw(board_s);
+
+            board_bis_s.setPosition(800, -30 + board_wobble);
+            window.draw(board_bis_s);
 
             //Draw Das Bar
             float das_progress = max((double)0, (double)(lock_delay_value / lock_delay));
@@ -1243,6 +1331,12 @@ int main() {
             das_bar_shape.setPosition(140, 700 + board_wobble);
             window.draw(das_bar_shape);
 
+            RectangleShape das_bar_bis_shape;
+            das_bar_bis_shape.setSize(Vector2f(das_progress * 320, 8));
+            das_bar_bis_shape.setFillColor(Color::White);
+            das_bar_bis_shape.setPosition(790, 700 + board_wobble);
+            window.draw(das_bar_bis_shape);
+
             //Draw Lock Count
             CircleShape lock_count_circle;
             lock_count_circle.setRadius(6);
@@ -1251,6 +1345,15 @@ int main() {
 
                 lock_count_circle.setPosition(141 + (i * 23.5), 680 + board_wobble);
                 window.draw(lock_count_circle);
+            }
+
+            CircleShape lock_count_circle_bis;
+            lock_count_circle_bis.setRadius(6);
+            lock_count_circle_bis.setFillColor(Color::White);
+            for(int i = 0; i < lock_count_value; i++) {
+
+                lock_count_circle_bis.setPosition(791 + (i * 23.5), 680 + board_wobble);
+                window.draw(lock_count_circle_bis);
             }
 
             //Draw Hold
@@ -1285,6 +1388,39 @@ int main() {
                     int x_offset = 0;
                     if(hold == I_TETROMINO || hold == O_TETROMINO) x_offset = 15;
                     s.setPosition(hold_piece[j].x * texture_size - 65 - x_offset, hold_piece[j].y * texture_size - 10);
+                    window.draw(s);
+                }
+            }
+
+            s.setColor(Color(255, 255, 255, 255));
+            if(hold != -1) {
+                Piece hold_piece_bis[4];
+                int hold_piece_choose_bis;
+                hold_piece_choose_bis = hold;
+                for(int j = 0; j < 4; j++) {
+
+                    hold_piece_bis[j].x = pieces[hold_piece_choose_bis][j] % 2 + 4;
+                    hold_piece_bis[j].y = pieces[hold_piece_choose_bis][j] / 2 + 3;
+
+                    if(hold == J_TETROMINO) hold_piece_bis[j].x --;
+                }
+                for(int j = 0; j < 4; j++) {
+
+                    Piece center_bis = hold_piece_bis[1];
+                    if(hold == I_TETROMINO) hold_piece_bis[j].Rotate(center_bis, 1);
+                    if(hold == T_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
+                    if(hold == S_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
+                    if(hold == Z_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
+                    if(hold == L_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
+                    if(hold == J_TETROMINO) hold_piece_bis[j].Rotate(center_bis, 1);
+                }
+
+                for(int j = 0; j < 4; j++) {
+
+                    s.setTextureRect(IntRect(hold*texture_size, 0, texture_size, texture_size));
+                    int x_offset = 0;
+                    if(hold == I_TETROMINO || hold == O_TETROMINO) x_offset = 15;
+                    s.setPosition(hold_piece_bis[j].x * texture_size - 65 - x_offset, hold_piece_bis[j].y * texture_size - 10);
                     window.draw(s);
                 }
             }
@@ -1330,6 +1466,46 @@ int main() {
                 }
             }
 
+            s.setColor(Color(255, 255, 255, 255));
+            for(int i = 0; i < seven_bag.size() + seven_bag_next.size(); i++) {
+
+                if(i < 5) {
+
+                    Piece next_piece_bis[4];
+                    int next_piece_choose_bis;
+                    if(i < seven_bag.size()) next_piece_choose_bis = seven_bag.at(i);
+                    else next_piece_choose_bis = seven_bag_next.at(i - seven_bag.size());
+
+                    int next_color_bis = next_piece_choose_bis;
+                    for(int j = 0; j < 4; j++) {
+
+                        next_piece_bis[j].x = pieces[next_piece_choose_bis][j] % 2 + 4;
+                        next_piece_bis[j].y = pieces[next_piece_choose_bis][j] / 2 + 3;
+
+                        if(next_color_bis == J_TETROMINO) next_piece_bis[j].x --;
+                    }
+                    for(int j = 0; j < 4; j++) {
+
+                        Piece center_bis = next_piece_bis[1];
+                        if(next_color_bis == I_TETROMINO) next_piece_bis[j].Rotate(center_bis, 1);
+                        if(next_color_bis == T_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
+                        if(next_color_bis == S_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
+                        if(next_color_bis == Z_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
+                        if(next_color_bis == L_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
+                        if(next_color_bis == J_TETROMINO) next_piece_bis[j].Rotate(center_bis, 1);
+                    }
+
+                    for(int j = 0; j < 4; j++) {
+
+                        s.setTextureRect(IntRect(next_color_bis*texture_size, 0, texture_size, texture_size));
+                        int x_offset = 0;
+                        if(next_color_bis == I_TETROMINO || next_color_bis == O_TETROMINO) x_offset = 15;
+                        s.setPosition(next_piece_bis[j].x * texture_size + 395 - x_offset, next_piece_bis[j].y * texture_size - 10 + (90 * i));
+                        window.draw(s);
+                    }
+                }
+            }
+
             //Draw Placed Pieces
             for(int i = 0; i < HEIGHT; i++) {
 
@@ -1343,7 +1519,33 @@ int main() {
                 }
             }
 
+            for(int i = 0; i < HEIGHT; i++) {
+                for(int j = 0; j < WIDTH; j++) {
+                    s.setColor(Color(255, 255, 255, 255));
+                    if(board_bis[i][j] == 0) continue;
+                    s.setTextureRect(IntRect((board_bis[i][j] - 1)*texture_size, 0, texture_size, texture_size));
+                    s.setPosition(j * texture_size + 800, i * texture_size - 90 + board_wobble);
+                    window.draw(s);
+                }
+            }
+
             //Draw Piece Lock
+            for(int i = 0; i < pieces_lock_bis.size(); i++) {
+
+                for(int j = 0; j < 4; j++) {
+                    pieces_lock_bis.at(i).at(j).animation += time * FRAMERATE * 4;
+                }
+
+                for(int j = 0; j < 4; j++) {
+
+                    if(pieces_lock_bis.at(i).at(j).animation >= 67) {
+
+                        pieces_lock_bis.erase(pieces_lock_bis.begin() + i);
+                        break;
+                    }
+                }
+            }
+
             for(int i = 0; i < pieces_lock.size(); i++) {
 
                 for(int j = 0; j < 4; j++) {
@@ -1368,11 +1570,23 @@ int main() {
                 window.draw(s_ghost);
             }
 
+            s_ghost.setTextureRect(IntRect(color*texture_size, 0, texture_size, texture_size));
+            for(int i = 0; i < 4; i++) {
+
+                s_ghost.setPosition(piece_bis[i].x * texture_size + 800, ghost_bis[i].y * texture_size - 90 + board_wobble);
+                window.draw(s_ghost);
+            }
+
             //Draw Pieces
             piece_indicator_shape_alpha = (sin(game_elapsed_time.getElapsedTime().asSeconds() * 10) + 1) * 30;
             RectangleShape piece_indicator_shape;
             piece_indicator_shape.setSize(Vector2f(30, 30));
             piece_indicator_shape.setFillColor(Color(255, 255, 255, piece_indicator_shape_alpha));
+
+            piece_indicator_shape_alpha_bis = (sin(game_elapsed_time.getElapsedTime().asSeconds() * 10) + 1) * 30;
+            RectangleShape piece_indicator_shape_bis;
+            piece_indicator_shape_bis.setSize(Vector2f(30, 30));
+            piece_indicator_shape_bis.setFillColor(Color(255, 255, 255, piece_indicator_shape_alpha_bis));
 
             float piece_alpha = max((double)0, (double)(lock_delay_value / lock_delay));
             for(int i = 0; i < 4; i++) {
@@ -1391,12 +1605,35 @@ int main() {
                 window.draw(piece_indicator_shape);
             }
 
+            for(int i = 0; i < 4; i++) {
+
+                s.setTextureRect(IntRect(7*texture_size, 0, texture_size, texture_size));
+                s.setColor(Color(255, 255, 255, 255));
+                s.setPosition(piece_bis[i].x * texture_size + 800, piece_bis[i].y * texture_size - 90 + board_wobble);
+                window.draw(s);
+
+                s.setTextureRect(IntRect(color*texture_size, 0, texture_size, texture_size));
+                s.setColor(Color(255, 255, 255, piece_alpha * 255));
+                s.setPosition(piece_bis[i].x * texture_size + 800, piece_bis[i].y * texture_size - 90 + board_wobble);
+                window.draw(s);
+
+                piece_indicator_shape.setPosition(piece_bis[i].x * texture_size + 800, piece_bis[i].y * texture_size - 90 + board_wobble);
+                window.draw(piece_indicator_shape_bis);
+            }
+
             //Draw Particle
             for(int i = 0; i < particles.size(); i++) {
 
                 particles.at(i).update(time);
                 particles.at(i).draw(&window);
                 if(particles.at(i).alpha <= 0) particles.erase(particles.begin() + i);
+            }
+
+            for(int i = 0; i < particles_bis.size(); i++) {
+
+                particles_bis.at(i).update(time);
+                particles_bis.at(i).draw(&window);
+                if(particles_bis.at(i).alpha <= 0) particles_bis.erase(particles_bis.begin() + i);
             }
 
             //Draw Backboard
