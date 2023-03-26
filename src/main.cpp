@@ -143,6 +143,15 @@ int sign(int num) {
     else return 0;
 }
 
+void createParticleBis(vector <Particle> *particles_bis) {
+
+    for(int i = 0; i < 4; i++) {
+
+        Particle particle((piece_bis[i].x * 30) + 150 + 15 + (rand() % 60 - 30), (piece_bis[i].y * 30) - 60 - 30, rand() % 250 + 150, 270 + (rand() % 60 - 30));
+        particles_bis->push_back(particle);
+    }
+}
+
 void createParticle(vector <Particle> *particles) {
 
     for(int i = 0; i < 4; i++) {
@@ -155,10 +164,15 @@ void createParticle(vector <Particle> *particles) {
 bool isCollidedGhost() {
 
     for(int i = 0; i < 4; i++) {
-
         if(ghost[i].y >= HEIGHT) return false;
         else if(board[ghost[i].y][ghost[i].x]) return false;
+    }
+    return 1;
+}
 
+bool isCollidedGhostBis() {
+
+    for(int i = 0; i < 4; i++) {
         if(ghost_bis[i].y >= HEIGHT) return false;
         else if(board_bis[ghost_bis[i].y][ghost_bis[i].x]) return false;
     }
@@ -168,10 +182,15 @@ bool isCollidedGhost() {
 bool isCollided() {
 
     for(int i = 0; i < 4; i++) {
-
         if(piece[i].x < 0 || piece[i].x >= WIDTH || piece[i].y >= HEIGHT) return false;
         else if(board[piece[i].y][piece[i].x]) return false;
+    }
+    return 1;
+}
 
+bool isCollidedBis() {
+
+    for(int i = 0; i < 4; i++) {
         if(piece_bis[i].x < 0 || piece_bis[i].x >= WIDTH || piece_bis[i].y >= HEIGHT) return false;
         else if(board_bis[piece_bis[i].y][piece_bis[i].x]) return false;
     }
@@ -181,6 +200,11 @@ bool isCollided() {
 bool isDead() {
 
     for(int i = 0; i < 4; i++) if(board[piece[i].y][piece[i].x]) return true;
+    return false;
+}
+
+bool isDeadBis() {
+
     for(int i = 0; i < 4; i++) if(board_bis[piece_bis[i].y][piece_bis[i].x]) return true;
     return false;
 }
@@ -214,15 +238,10 @@ int main() {
     board_t.loadFromFile("Sprites/board.png");
     Sprite board_s(board_t);
 
-    Texture board_bis_t;
-    board_bis_t.loadFromFile("Sprites/board.png");
-    Sprite board_bis_s(board_t);
-
     int hold;
     int move_x;
     int rotate;
     int color;
-    int color_bis;
     int harddrop;
     int holded;
     int move_left;
@@ -234,6 +253,7 @@ int main() {
     Clock game_elapsed_time;
 
     double timer;
+    double timer_bis;
     double delay;
     vector <int> seven_bag;
     vector <int> seven_bag_next;
@@ -258,10 +278,6 @@ int main() {
         for(int j = 0; j < WIDTH; j++)
             board[i][j] = 0;
 
-    for(int i = 0; i < HEIGHT; i++)
-        for(int j = 0; j < WIDTH; j++)
-            board_bis[i][j] = 0;
-
     start = 3;
     timer = 0;
     delay = 0.5;
@@ -277,7 +293,6 @@ int main() {
     seven_bag_next = generateNewBag();
 
     double piece_indicator_shape_alpha = 0;
-    double piece_indicator_shape_alpha_bis = 0;
     double board_wobble = 0;
 
     int line_clear_combo = 0;
@@ -285,11 +300,9 @@ int main() {
 
     //Choose First Piece
     int choose_piece = seven_bag.at(0);
-    int choose_piece_bis = seven_bag.at(0);
     seven_bag.erase(seven_bag.begin());
 
     color = choose_piece;
-    color_bis = choose_piece_bis;
     for(int i = 0; i < 4; i++) {
 
         piece[i].x = pieces[choose_piece][i] % 2 + 4;
@@ -297,12 +310,6 @@ int main() {
         piece[i].rotation = 0;
 
         if(color == J_TETROMINO) piece[i].x --;
-
-        piece_bis[i].x = pieces[choose_piece_bis][i] % 2 + 4;
-        piece_bis[i].y = pieces[choose_piece_bis][i] / 2 + 3;
-        piece_bis[i].rotation = 0;
-
-        if(color_bis == J_TETROMINO) piece_bis[i].x --;
     }
     for(int i = 0; i < 4; i++) {
 
@@ -313,14 +320,6 @@ int main() {
         if(color == Z_TETROMINO) piece[i].Rotate(center, -1);
         if(color == L_TETROMINO) piece[i].Rotate(center, -1);
         if(color == J_TETROMINO) piece[i].Rotate(center, 1);
-
-        Piece center_bis = piece_bis[1];
-        if(color_bis == I_TETROMINO) piece[i].Rotate(center_bis, 1);
-        if(color_bis == T_TETROMINO) piece[i].Rotate(center_bis, -1);
-        if(color_bis == S_TETROMINO) piece[i].Rotate(center_bis, -1);
-        if(color_bis == Z_TETROMINO) piece[i].Rotate(center_bis, -1);
-        if(color_bis == L_TETROMINO) piece[i].Rotate(center_bis, -1);
-        if(color_bis == J_TETROMINO) piece[i].Rotate(center_bis, 1);
     }
 
     int is_rotate_cw = 0;
@@ -344,6 +343,123 @@ int main() {
     int last_key = 0;
     int key_restart = 0;
 
+    //Pieces
+    Texture t_bis;
+    t_bis.loadFromFile("Sprites/jstris1.png");
+    int texture_size_bis = 30;
+    Sprite s_bis(t_bis);
+    s_bis.setTextureRect(IntRect(0, 0, texture_size_bis, texture_size_bis));
+
+    //Ghost
+    Texture t_ghost_bis;
+    t_ghost_bis.loadFromFile("Sprites/ghost.png");
+    Sprite s_ghost_bis(t_ghost_bis);
+    s_ghost_bis.setTextureRect(IntRect(0, 0, texture_size_bis, texture_size_bis));
+
+    //Board
+    Texture board_t_bis;
+    board_t_bis.loadFromFile("Sprites/board.png");
+    Sprite board_s_bis(board_t_bis);
+
+    int hold_bis;
+    int move_x_bis;
+    int rotate_bis;
+    int color_bis;
+    int harddrop_bis;
+    int holded_bis;
+    int move_left_bis;
+    int move_right_bis;
+    int start_bis;
+
+    double delay_bis;
+    vector <int> seven_bag_bis;
+    vector <int> seven_bag_next_bis;
+
+    restart_bis :
+
+    //Handling control
+    double das_bis = 8;
+    double lock_delay_bis = 0.5;
+    double fastdrop_delay_bis = 0;
+    int lock_count_bis = 14;
+    int is_touch_ground_bis = 0;
+
+    int all_line_count_bis = 0;
+    int all_piece_count_bis = 0;
+
+    int lock_count_value_bis = lock_count_bis;
+    double das_value_bis = das_bis;
+    double lock_delay_value_bis = lock_delay_bis;
+
+    for(int i = 0; i < HEIGHT; i++)
+        for(int j = 0; j < WIDTH; j++)
+            board_bis[i][j] = 0;
+
+    start_bis = 3;
+    delay_bis = 0.5;
+    timer_bis = 0;
+    move_x_bis = 0;
+    color_bis = 0;
+    harddrop_bis = 0;
+    rotate_bis = 0;
+    hold_bis = -1;
+    move_left_bis = 0;
+    move_right_bis = 0;
+    holded_bis = 0;
+    seven_bag_bis = generateNewBag();
+    seven_bag_next_bis = generateNewBag();
+
+    double piece_indicator_shape_alpha_bis = 0;
+    double board_wobble_bis = 0;
+
+    int line_clear_combo_bis = 0;
+    int btb_combo_bis = 0;
+
+    //Choose First Piece
+    int choose_piece_bis = seven_bag.at(0);
+    seven_bag.erase(seven_bag.begin());
+
+    color_bis = choose_piece_bis;
+    for(int i = 0; i < 4; i++) {
+
+        piece_bis[i].x = pieces[choose_piece_bis][i] % 2 + 4;
+        piece_bis[i].y = pieces[choose_piece_bis][i] / 2 + 3;
+        piece_bis[i].rotation = 0;
+
+        if(color_bis == J_TETROMINO) piece_bis[i].x --;
+    }
+    for(int i = 0; i < 4; i++) {
+
+        Piece center_bis = piece_bis[1];
+        if(color_bis == I_TETROMINO) piece[i].Rotate(center_bis, 1);
+        if(color_bis == T_TETROMINO) piece[i].Rotate(center_bis, -1);
+        if(color_bis == S_TETROMINO) piece[i].Rotate(center_bis, -1);
+        if(color_bis == Z_TETROMINO) piece[i].Rotate(center_bis, -1);
+        if(color_bis == L_TETROMINO) piece[i].Rotate(center_bis, -1);
+        if(color_bis == J_TETROMINO) piece[i].Rotate(center_bis, 1);
+    }
+
+    int is_rotate_cw_bis = 0;
+    int is_rotate_ccw_bis = 0;
+    int is_harddrop_bis = 0;
+    int is_right_bis = 0;
+    int is_left_bis = 0;
+    int is_hold_bis = 0;
+    int is_sidehit_bis = 0;
+    int is_tspin_bis = 0;
+    int is_restart_bis = 0;
+
+    int key_rotate_cw_bis = 0;
+    int key_rotate_ccw_bis = 0;
+    int key_harddrop_bis = 0;
+    int key_right_bis = 0;
+    int key_left_bis = 0;
+    int key_right_hold_bis = 0;
+    int key_left_hold_bis = 0;
+    bool is_on_focus_bis = true;
+    int last_key_bis = 0;
+    int key_restart_bis = 0;
+
     sfx_music.play();
 
     while(window.isOpen()) {
@@ -353,16 +469,12 @@ int main() {
         for(int i = 0; i < 4; i++) {
             cache[i] = piece[i];
             piece[i].y ++;
-            cache_bis[i] = piece_bis[i];
-            piece_bis[i].y ++;
         }
         if(!isCollided()) {
             lock_delay_value -= time;
 
             if(lock_delay_value <= 0) {
-
                 for(int i = 0; i < 4; i++) piece[i] = cache[i];
-                for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 goto makeNewPiece;
             }
             if(is_touch_ground == 0) {
@@ -375,9 +487,9 @@ int main() {
             is_touch_ground = 0;
         }
         for(int i = 0; i < 4; i++) piece[i] = cache[i];
-        for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
 
         timer += time;
+        timer_bis += time;
         clock.restart();
 
         Event e;
@@ -395,6 +507,20 @@ int main() {
                 if(e.key.code == Keyboard::Left) is_left = 0;
                 if(e.key.code == Keyboard::Right) is_right = 0;
                 if(e.key.code == Keyboard::R) is_restart = 0;
+            }
+
+            if(e.type == Event::GainedFocus) is_on_focus_bis = true;
+            if(e.type == Event::LostFocus) is_on_focus_bis = false;
+
+            if(is_on_focus_bis && e.type == Event::KeyReleased) {
+
+                if(e.key.code == Keyboard::X || e.key.code == Keyboard::Up) is_rotate_cw_bis = 0;
+                if(e.key.code == Keyboard::Z) is_rotate_ccw_bis = 0;
+                if(e.key.code == Keyboard::Space) is_harddrop_bis = 0;
+                if(e.key.code == Keyboard::C) is_hold_bis = 0;
+                if(e.key.code == Keyboard::Left) is_left_bis = 0;
+                if(e.key.code == Keyboard::Right) is_right_bis = 0;
+                if(e.key.code == Keyboard::R) is_restart_bis = 0;
             }
 
             if(e.type == Event::Closed) {
@@ -461,12 +587,9 @@ int main() {
 
                     cache[i] = piece[i];
                     piece[i].x += 1;
-                    cache_bis[i] = piece_bis[i];
-                    piece_bis[i].x += 1;
                 }
 
                 if(!isCollided()) for(int i = 0; i < 4; i++) piece[i] = cache[i];
-                if(!isCollided()) for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 else {
                     if(lock_count_value > 0) {
                         lock_count_value--;
@@ -479,11 +602,8 @@ int main() {
                 for(int i = 0; i < 4; i++) {
                     cache[i] = piece[i];
                     piece[i].x -= 1;
-                    cache_bis[i] = piece_bis[i];
-                    piece_bis[i].x -= 1;
                 }
                 if(!isCollided()) for(int i = 0; i < 4; i++) piece[i] = cache[i];
-                if(!isCollided()) for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 else {
                     if(lock_count_value > 0) {
                         lock_count_value--;
@@ -497,15 +617,12 @@ int main() {
                 for(int i = 0; i < 4; i++) {
                     cache[i] = piece[i];
                     piece[i].x += sign(key_right - key_left);
-                    cache_bis[i] = piece_bis[i];
-                    piece_bis[i].x += sign(key_right - key_left);
                 }
                 if(!isCollided()) {
                     if(is_sidehit == 0) {
                         is_sidehit = 1;
                     }
                     for(int i = 0; i < 4; i++) piece[i] = cache[i];
-                    for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 }
                 else {
                     is_sidehit = 0;
@@ -522,11 +639,9 @@ int main() {
                     hold = color;
                     color = -1;
                     while(isCollided()) {
-                        for(int i = 0; i < 4; i++) piece[i].y ++;
-                        for(int i = 0; i < 4; i++) piece_bis[i].y ++;
+                        for(int i = 0; i < 4; i++) piece[i].y++;
                     }
                     for(int i = 0; i < 4; i++) piece[i].y --;
-                    for(int i = 0; i < 4; i++) piece_bis[i].y --;
                     lock_delay_value = -1;
                     timer = 0;
                     goto makeNewPiece;
@@ -548,12 +663,6 @@ int main() {
                         if(color == J_TETROMINO) piece[i].x --;
                         if(color == I_TETROMINO) piece[i].y ++;
 
-                        piece_bis[i].x = pieces[choose_piece_bis][i] % 2 + 4;
-                        piece_bis[i].y = pieces[choose_piece_bis][i] / 2 + 2;
-                        piece_bis[i].rotation = 0;
-
-                        if(color == J_TETROMINO) piece_bis[i].x --;
-                        if(color == I_TETROMINO) piece_bis[i].y ++;
                     }
                     for(int i = 0; i < 4; i++) {
 
@@ -565,15 +674,6 @@ int main() {
                         if(color == L_TETROMINO) piece[i].Rotate(center, -1);
                         if(color == J_TETROMINO) piece[i].Rotate(center, 1);
                         piece[i].rotation = 1;
-
-                        Piece center_bis = piece_bis[1];
-                        if(color_bis == I_TETROMINO) piece_bis[i].Rotate(center_bis, 1);
-                        if(color_bis == T_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
-                        if(color_bis == S_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
-                        if(color_bis == Z_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
-                        if(color_bis == L_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
-                        if(color_bis == J_TETROMINO) piece_bis[i].Rotate(center_bis, 1);
-                        piece_bis[i].rotation = 1;
                     }
                 }
             }
@@ -581,12 +681,10 @@ int main() {
             //HardDrop
             if(harddrop && start <= 0) {
                 while(isCollided()) {
-                    for(int i = 0; i < 4; i++) piece[i].y ++;
-                    for(int i = 0; i < 4; i++) piece_bis[i].y ++;
+                    for(int i = 0; i < 4; i++) piece[i].y++;
                     createParticle(&particles);
                 }
-                for(int i = 0; i < 4; i++) piece[i].y --;
-                for(int i = 0; i < 4; i++) piece_bis[i].y --;
+                for(int i = 0; i < 4; i++) piece[i].y--;
                 lock_delay_value = -1;
                 goto makeNewPiece;
             }
@@ -595,13 +693,10 @@ int main() {
             if(rotate != 0) {
 
                 int before_rotation, after_rotation;
-                int before_rotation_bis, after_rotation_bis;
                 for(int i = 0; i < 4; i++) {
 
                     cache[i] = piece[i];
                     before_rotation = piece[i].rotation;
-                    cache_bis[i] = piece_bis[i];
-                    before_rotation_bis = piece_bis[i].rotation;
                     if(color == I_TETROMINO) {
 
                         if(piece[i].rotation == 1) {
@@ -658,246 +753,12 @@ int main() {
                         }
                         piece[i].rotation += rotate;
                     }
-                    if(color_bis == I_TETROMINO) {
-
-                        if(piece_bis[i].rotation == 1) {
-
-                            if(rotate == 1) {
-                                if(i == 0) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
-                                if(i == 2) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
-                                if(i == 3) { piece_bis[i].x+=2, piece_bis[i].y+=2; };
-                            }
-                            else {
-                                if(i == 0) { piece_bis[i].x-=2, piece_bis[i].y+=2; };
-                                if(i == 1) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
-                                if(i == 3) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
-                            }
-                        }
-                        if(piece_bis[i].rotation == 2) {
-
-                            if(rotate == 1) {
-                                if(i == 0) { piece_bis[i].x-=2, piece_bis[i].y+=2; };
-                                if(i == 1) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
-                                if(i == 3) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
-                            }
-                            else {
-                                if(i == 0) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
-                                if(i == 2) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
-                                if(i == 3) { piece_bis[i].x-=2, piece_bis[i].y-=2; };
-                            }
-                        }
-                        if(piece_bis[i].rotation == 3) {
-
-                            if(rotate == 1) {
-                                if(i == 0) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
-                                if(i == 2) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
-                                if(i == 3) { piece_bis[i].x-=2, piece_bis[i].y-=2; };
-                            }
-                            else {
-                                if(i == 0) { piece_bis[i].x+=2, piece_bis[i].y-=2; };
-                                if(i == 1) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
-                                if(i == 3) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
-                            }
-                        }
-                        if(piece_bis[i].rotation == 4) {
-
-                            if(rotate == 1) {
-                                if(i == 0) { piece_bis[i].x+=2, piece_bis[i].y-=2; };
-                                if(i == 1) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
-                                if(i == 3) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
-                            }
-                            else {
-                                if(i == 0) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
-                                if(i == 2) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
-                                if(i == 3) { piece_bis[i].x+=2, piece_bis[i].y+=2; };
-                            }
-                        }
-                        piece_bis[i].rotation += rotate;
-                    }
                     else if(color != O_TETROMINO) piece[i].Rotate(piece[1], rotate);
-                    else if(color_bis != O_TETROMINO) piece_bis[i].Rotate(piece_bis[1], rotate);
 
                     if(piece[i].rotation > 4) piece[i].rotation = 1;
                     if(piece[i].rotation < 1) piece[i].rotation = 4;
 
-                    if(piece_bis[i].rotation > 4) piece_bis[i].rotation = 1;
-                    if(piece_bis[i].rotation < 1) piece_bis[i].rotation = 4;
-
                     after_rotation = piece[i].rotation;
-                    after_rotation_bis = piece_bis[i].rotation;
-                }
-
-                Piece rotation_piece_bis[4];
-                if(color_bis != I_TETROMINO) {
-
-                    if((before_rotation_bis == 1 && after_rotation_bis == 2) || (before_rotation_bis == 3 && after_rotation_bis == 2)) { //1 >> 2 & 3 >> 2
-                        //TEST 2
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                rotation_piece_bis[i].x = piece_bis[i].x;
-                                rotation_piece_bis[i].y = piece_bis[i].y;
-                                piece_bis[i].x += -1;
-                                piece_bis[i].y += 0;
-                            }
-                        }
-                        //TEST 3
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += -1;
-                                piece_bis[i].y += -1;
-                            }
-                        }
-                        //TEST 4
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += 0;
-                                piece_bis[i].y += 2;
-                            }
-                        }
-                        //TEST 5
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += -1;
-                                piece_bis[i].y += 2;
-                            }
-                        }
-                    }
-                    if((before_rotation_bis == 2 && after_rotation_bis == 1) || (before_rotation_bis == 2 && after_rotation_bis == 3)) { //2 >> 1 && 2 >> 3
-                        //TEST 2
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                rotation_piece_bis[i].x = piece_bis[i].x;
-                                rotation_piece_bis[i].y = piece_bis[i].y;
-                                piece_bis[i].x += 1;
-                                piece_bis[i].y += 0;
-                            }
-                        }
-                        //TEST 3
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += 1;
-                                piece_bis[i].y += 1;
-                            }
-                        }
-                        //TEST 4
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += 0;
-                                piece_bis[i].y += -2;
-                            }
-                        }
-                        //TEST 5
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += 1;
-                                piece_bis[i].y += -2;
-                            }
-                        }
-                    }
-                    if((before_rotation_bis == 3 && after_rotation_bis == 4) || (before_rotation_bis == 1 && after_rotation_bis == 4)) { //3 >> 4 & 1 >> 4
-                        //TEST 2
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                rotation_piece_bis[i].x = piece_bis[i].x;
-                                rotation_piece_bis[i].y = piece_bis[i].y;
-                                piece_bis[i].x += 1;
-                                piece_bis[i].y += 0;
-                            }
-                        }
-                        //TEST 3
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += 1;
-                                piece_bis[i].y += -1;
-                            }
-                        }
-                        //TEST 4
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += 0;
-                                piece_bis[i].y += 2;
-                            }
-                        }
-                        //TEST 5
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += 1;
-                                piece_bis[i].y += 2;
-                            }
-                        }
-                    }
-                    if((before_rotation_bis == 4 && after_rotation_bis == 3) || (before_rotation_bis == 4 && after_rotation_bis == 1)) { //4 >> 3 && 4 >> 1
-                        //TEST 2
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                rotation_piece_bis[i].x = piece_bis[i].x;
-                                rotation_piece_bis[i].y = piece_bis[i].y;
-                                piece_bis[i].x += -1;
-                                piece_bis[i].y += 0;
-                            }
-                        }
-                        //TEST 3
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += -1;
-                                piece_bis[i].y += 1;
-                            }
-                        }
-                        //TEST 4
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += 0;
-                                piece_bis[i].y += -2;
-                            }
-                        }
-                        //TEST 5
-                        if(!isCollided()) {
-                            for(int i = 0; i < 4; i++) {
-
-                                piece_bis[i].x = rotation_piece_bis[i].x;
-                                piece_bis[i].y = rotation_piece_bis[i].y;
-                                piece_bis[i].x += -1;
-                                piece_bis[i].y += -2;
-                            }
-                        }
-                    }
                 }
 
                 Piece rotation_piece[4];
@@ -1074,7 +935,6 @@ int main() {
                 }
 
                 if(!isCollided()) for(int i = 0; i < 4; i++) piece[i] = cache[i];
-                if(!isCollided()) for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 else {
 
                     if(lock_count_value > 0) {
@@ -1094,18 +954,6 @@ int main() {
                             is_tspin = 1;
                         }
                     }
-                    if(color_bis == T_TETROMINO) {
-
-                        int corner_count_bis = 0;
-                        if(board_bis[piece_bis[1].y + 1][piece_bis[1].x + 1] != 0 || piece_bis[1].x + 1 >= WIDTH || piece_bis[1].y + 1 >= HEIGHT) corner_count_bis ++;
-                        if(board_bis[piece_bis[1].y + 1][piece_bis[1].x - 1] != 0 || piece_bis[1].x - 1 < 0 || piece_bis[1].y + 1 >= HEIGHT) corner_count_bis ++;
-                        if(board_bis[piece_bis[1].y - 1][piece_bis[1].x + 1] != 0 || piece_bis[1].x + 1 >= WIDTH || piece_bis[1].y - 1 < 0) corner_count_bis ++;
-                        if(board_bis[piece_bis[1].y - 1][piece_bis[1].x - 1] != 0 || piece_bis[1].x - 1 < 0 || piece_bis[1].y + 1 < 0) corner_count_bis ++;
-
-                        if(corner_count_bis >= 3) {
-                            is_tspin = 1;
-                        }
-                    }
                 }
             }
 
@@ -1117,8 +965,6 @@ int main() {
                 for(int i = 0; i < 4; i++) {
                     cache[i] = piece[i];
                     piece[i].y ++;
-                    cache_bis[i] = piece_bis[i];
-                    piece_bis[i].y ++;
                 }
 
                 if(!isCollided() && lock_delay_value < 0) {
@@ -1130,7 +976,6 @@ int main() {
                         createParticle(&particles);
 
                         vector <PieceLock> piece_lock;
-                        vector <PieceLock> piece_lock_bis;
                         for(int i = 0; i < 4; i++) {
 
                             PieceLock piece_lock_one;
@@ -1138,15 +983,8 @@ int main() {
                             piece_lock_one.y = piece[i].y;
 
                             piece_lock.push_back(piece_lock_one);
-
-                            PieceLock piece_lock_one_bis;
-                            piece_lock_one_bis.x = piece_bis[i].x;
-                            piece_lock_one_bis.y = piece_bis[i].y;
-
-                            piece_lock_bis.push_back(piece_lock_one_bis);
                         }
                         pieces_lock.push_back(piece_lock);
-                        pieces_lock_bis.push_back(piece_lock_bis);
 
                         board_wobble = 7;
                         all_piece_count ++;
@@ -1156,7 +994,6 @@ int main() {
                     }
 
                     for(int i = 0; i < 4; i++) board[cache[i].y][cache[i].x] = color + 1;
-                    for(int i = 0; i < 4; i++) board_bis[cache_bis[i].y][cache_bis[i].x] = color_bis + 1;
                     int choose_piece = seven_bag.at(0);
                     seven_bag.erase(seven_bag.begin());
                     if(seven_bag.size() == 0) {
@@ -1173,13 +1010,6 @@ int main() {
 
                         if(color == J_TETROMINO) piece[i].x --;
                         if(color == I_TETROMINO) piece[i].y ++;
-
-                        piece_bis[i].x = pieces[choose_piece_bis][i] % 2 + 4;
-                        piece_bis[i].y = pieces[choose_piece_bis][i] / 2 + 2;
-                        piece_bis[i].rotation = 0;
-
-                        if(color_bis == J_TETROMINO) piece_bis[i].x --;
-                        if(color_bis == I_TETROMINO) piece_bis[i].y ++;
                     }
                     for(int i = 0; i < 4; i++) {
 
@@ -1191,15 +1021,6 @@ int main() {
                         if(color == L_TETROMINO) piece[i].Rotate(center, -1);
                         if(color == J_TETROMINO) piece[i].Rotate(center, 1);
                         piece[i].rotation = 1;
-
-                        Piece center_bis = piece_bis[1];
-                        if(color_bis == I_TETROMINO) piece_bis[i].Rotate(center_bis, 1);
-                        if(color_bis == T_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
-                        if(color_bis == S_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
-                        if(color_bis == Z_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
-                        if(color_bis == L_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
-                        if(color_bis == J_TETROMINO) piece_bis[i].Rotate(center_bis, 1);
-                        piece_bis[i].rotation = 1;
                     }
 
                     lock_delay_value = lock_delay;
@@ -1216,7 +1037,6 @@ int main() {
 
                             if(board[i][j]) count++;
                             board[checkLine][j] = board[i][j];
-                            board_bis[checkLine][j] = board_bis[i][j];
                         }
                         if(count < WIDTH) checkLine--;
                         else line_clear_count++;
@@ -1247,7 +1067,6 @@ int main() {
                     for(int i = 0; i < HEIGHT; i++) {
                         for(int j = 0; j < WIDTH; j++) {
                             if(board[i][j] != 0) perfect_clear = 0;
-                            if(board_bis[i][j] != 0) perfect_clear = 0;
                         }
                     }
                     is_tspin = 0;
@@ -1255,7 +1074,6 @@ int main() {
                 else if(!isCollided()) {
 
                     for(int i = 0; i < 4; i++) piece[i] = cache[i];
-                    for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
                 }
                 else {
 
@@ -1277,19 +1095,14 @@ int main() {
 
                 ghost[i].x = piece[i].x;
                 ghost[i].y = piece[i].y;
-                ghost_bis[i].x = piece_bis[i].x;
-                ghost_bis[i].y = piece_bis[i].y;
             }
             for(int i = 0; i < 4; i++) {
 
                 while(isCollidedGhost()) {
-
                     for(int i = 0; i < 4; i++) ghost[i].y ++;
-                    for(int i = 0; i < 4; i++) ghost_bis[i].y ++;
                 }
 
                 for(int i = 0; i < 4; i++) ghost[i].y --;
-                for(int i = 0; i < 4; i++) ghost_bis[i].y --;
             }
 
             move_x = 0;
@@ -1309,18 +1122,9 @@ int main() {
             backboard_shape.setPosition(140, 20 + board_wobble);
             window.draw(backboard_shape);
 
-            RectangleShape backboard_bis_shape;
-            backboard_bis_shape.setSize(Vector2f(320, 650));
-            backboard_bis_shape.setFillColor(Color::White);
-            backboard_bis_shape.setPosition(790, 20 + board_wobble);
-            window.draw(backboard_bis_shape);
-
             //Draw Grid
             board_s.setPosition(150, -30 + board_wobble);
             window.draw(board_s);
-
-            board_bis_s.setPosition(800, -30 + board_wobble);
-            window.draw(board_bis_s);
 
             //Draw Das Bar
             float das_progress = max((double)0, (double)(lock_delay_value / lock_delay));
@@ -1331,12 +1135,6 @@ int main() {
             das_bar_shape.setPosition(140, 700 + board_wobble);
             window.draw(das_bar_shape);
 
-            RectangleShape das_bar_bis_shape;
-            das_bar_bis_shape.setSize(Vector2f(das_progress * 320, 8));
-            das_bar_bis_shape.setFillColor(Color::White);
-            das_bar_bis_shape.setPosition(790, 700 + board_wobble);
-            window.draw(das_bar_bis_shape);
-
             //Draw Lock Count
             CircleShape lock_count_circle;
             lock_count_circle.setRadius(6);
@@ -1345,15 +1143,6 @@ int main() {
 
                 lock_count_circle.setPosition(141 + (i * 23.5), 680 + board_wobble);
                 window.draw(lock_count_circle);
-            }
-
-            CircleShape lock_count_circle_bis;
-            lock_count_circle_bis.setRadius(6);
-            lock_count_circle_bis.setFillColor(Color::White);
-            for(int i = 0; i < lock_count_value; i++) {
-
-                lock_count_circle_bis.setPosition(791 + (i * 23.5), 680 + board_wobble);
-                window.draw(lock_count_circle_bis);
             }
 
             //Draw Hold
@@ -1388,39 +1177,6 @@ int main() {
                     int x_offset = 0;
                     if(hold == I_TETROMINO || hold == O_TETROMINO) x_offset = 15;
                     s.setPosition(hold_piece[j].x * texture_size - 65 - x_offset, hold_piece[j].y * texture_size - 10);
-                    window.draw(s);
-                }
-            }
-
-            s.setColor(Color(255, 255, 255, 255));
-            if(hold != -1) {
-                Piece hold_piece_bis[4];
-                int hold_piece_choose_bis;
-                hold_piece_choose_bis = hold;
-                for(int j = 0; j < 4; j++) {
-
-                    hold_piece_bis[j].x = pieces[hold_piece_choose_bis][j] % 2 + 4;
-                    hold_piece_bis[j].y = pieces[hold_piece_choose_bis][j] / 2 + 3;
-
-                    if(hold == J_TETROMINO) hold_piece_bis[j].x --;
-                }
-                for(int j = 0; j < 4; j++) {
-
-                    Piece center_bis = hold_piece_bis[1];
-                    if(hold == I_TETROMINO) hold_piece_bis[j].Rotate(center_bis, 1);
-                    if(hold == T_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
-                    if(hold == S_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
-                    if(hold == Z_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
-                    if(hold == L_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
-                    if(hold == J_TETROMINO) hold_piece_bis[j].Rotate(center_bis, 1);
-                }
-
-                for(int j = 0; j < 4; j++) {
-
-                    s.setTextureRect(IntRect(hold*texture_size, 0, texture_size, texture_size));
-                    int x_offset = 0;
-                    if(hold == I_TETROMINO || hold == O_TETROMINO) x_offset = 15;
-                    s.setPosition(hold_piece_bis[j].x * texture_size - 65 - x_offset, hold_piece_bis[j].y * texture_size - 10);
                     window.draw(s);
                 }
             }
@@ -1466,46 +1222,6 @@ int main() {
                 }
             }
 
-            s.setColor(Color(255, 255, 255, 255));
-            for(int i = 0; i < seven_bag.size() + seven_bag_next.size(); i++) {
-
-                if(i < 5) {
-
-                    Piece next_piece_bis[4];
-                    int next_piece_choose_bis;
-                    if(i < seven_bag.size()) next_piece_choose_bis = seven_bag.at(i);
-                    else next_piece_choose_bis = seven_bag_next.at(i - seven_bag.size());
-
-                    int next_color_bis = next_piece_choose_bis;
-                    for(int j = 0; j < 4; j++) {
-
-                        next_piece_bis[j].x = pieces[next_piece_choose_bis][j] % 2 + 4;
-                        next_piece_bis[j].y = pieces[next_piece_choose_bis][j] / 2 + 3;
-
-                        if(next_color_bis == J_TETROMINO) next_piece_bis[j].x --;
-                    }
-                    for(int j = 0; j < 4; j++) {
-
-                        Piece center_bis = next_piece_bis[1];
-                        if(next_color_bis == I_TETROMINO) next_piece_bis[j].Rotate(center_bis, 1);
-                        if(next_color_bis == T_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
-                        if(next_color_bis == S_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
-                        if(next_color_bis == Z_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
-                        if(next_color_bis == L_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
-                        if(next_color_bis == J_TETROMINO) next_piece_bis[j].Rotate(center_bis, 1);
-                    }
-
-                    for(int j = 0; j < 4; j++) {
-
-                        s.setTextureRect(IntRect(next_color_bis*texture_size, 0, texture_size, texture_size));
-                        int x_offset = 0;
-                        if(next_color_bis == I_TETROMINO || next_color_bis == O_TETROMINO) x_offset = 15;
-                        s.setPosition(next_piece_bis[j].x * texture_size + 395 - x_offset, next_piece_bis[j].y * texture_size - 10 + (90 * i));
-                        window.draw(s);
-                    }
-                }
-            }
-
             //Draw Placed Pieces
             for(int i = 0; i < HEIGHT; i++) {
 
@@ -1519,32 +1235,7 @@ int main() {
                 }
             }
 
-            for(int i = 0; i < HEIGHT; i++) {
-                for(int j = 0; j < WIDTH; j++) {
-                    s.setColor(Color(255, 255, 255, 255));
-                    if(board_bis[i][j] == 0) continue;
-                    s.setTextureRect(IntRect((board_bis[i][j] - 1)*texture_size, 0, texture_size, texture_size));
-                    s.setPosition(j * texture_size + 800, i * texture_size - 90 + board_wobble);
-                    window.draw(s);
-                }
-            }
-
             //Draw Piece Lock
-            for(int i = 0; i < pieces_lock_bis.size(); i++) {
-
-                for(int j = 0; j < 4; j++) {
-                    pieces_lock_bis.at(i).at(j).animation += time * FRAMERATE * 4;
-                }
-
-                for(int j = 0; j < 4; j++) {
-
-                    if(pieces_lock_bis.at(i).at(j).animation >= 67) {
-
-                        pieces_lock_bis.erase(pieces_lock_bis.begin() + i);
-                        break;
-                    }
-                }
-            }
 
             for(int i = 0; i < pieces_lock.size(); i++) {
 
@@ -1570,23 +1261,11 @@ int main() {
                 window.draw(s_ghost);
             }
 
-            s_ghost.setTextureRect(IntRect(color*texture_size, 0, texture_size, texture_size));
-            for(int i = 0; i < 4; i++) {
-
-                s_ghost.setPosition(piece_bis[i].x * texture_size + 800, ghost_bis[i].y * texture_size - 90 + board_wobble);
-                window.draw(s_ghost);
-            }
-
             //Draw Pieces
             piece_indicator_shape_alpha = (sin(game_elapsed_time.getElapsedTime().asSeconds() * 10) + 1) * 30;
             RectangleShape piece_indicator_shape;
             piece_indicator_shape.setSize(Vector2f(30, 30));
             piece_indicator_shape.setFillColor(Color(255, 255, 255, piece_indicator_shape_alpha));
-
-            piece_indicator_shape_alpha_bis = (sin(game_elapsed_time.getElapsedTime().asSeconds() * 10) + 1) * 30;
-            RectangleShape piece_indicator_shape_bis;
-            piece_indicator_shape_bis.setSize(Vector2f(30, 30));
-            piece_indicator_shape_bis.setFillColor(Color(255, 255, 255, piece_indicator_shape_alpha_bis));
 
             float piece_alpha = max((double)0, (double)(lock_delay_value / lock_delay));
             for(int i = 0; i < 4; i++) {
@@ -1605,22 +1284,6 @@ int main() {
                 window.draw(piece_indicator_shape);
             }
 
-            for(int i = 0; i < 4; i++) {
-
-                s.setTextureRect(IntRect(7*texture_size, 0, texture_size, texture_size));
-                s.setColor(Color(255, 255, 255, 255));
-                s.setPosition(piece_bis[i].x * texture_size + 800, piece_bis[i].y * texture_size - 90 + board_wobble);
-                window.draw(s);
-
-                s.setTextureRect(IntRect(color*texture_size, 0, texture_size, texture_size));
-                s.setColor(Color(255, 255, 255, piece_alpha * 255));
-                s.setPosition(piece_bis[i].x * texture_size + 800, piece_bis[i].y * texture_size - 90 + board_wobble);
-                window.draw(s);
-
-                piece_indicator_shape.setPosition(piece_bis[i].x * texture_size + 800, piece_bis[i].y * texture_size - 90 + board_wobble);
-                window.draw(piece_indicator_shape_bis);
-            }
-
             //Draw Particle
             for(int i = 0; i < particles.size(); i++) {
 
@@ -1629,6 +1292,789 @@ int main() {
                 if(particles.at(i).alpha <= 0) particles.erase(particles.begin() + i);
             }
 
+            //Draw Backboard
+
+            backboard_shape.setSize(Vector2f(320, 10));
+            backboard_shape.setFillColor(Color::White);
+            backboard_shape.setPosition(140, 10 + board_wobble);
+            window.draw(backboard_shape);
+
+        }
+        for(int i = 0; i < 4; i++) {
+            cache_bis[i] = piece_bis[i];
+            piece_bis[i].y ++;
+        }
+        if(!isCollidedBis()) {
+            lock_delay_value_bis -= time;
+
+            if(lock_delay_value_bis <= 0) {
+                for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
+                goto makeNewPiece_bis;
+            }
+            if(is_touch_ground_bis == 0) {
+
+                is_touch_ground_bis = 1;
+            }
+        }
+        else {
+
+            is_touch_ground_bis = 0;
+        }
+        for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
+
+        if(is_on_focus_bis) {
+
+            //Key Fixed
+            if(Keyboard::isKeyPressed(Keyboard::C) && is_hold_bis == 0) {
+
+                is_hold_bis = -1;
+                holded_bis = 1;
+            }
+            if((Keyboard::isKeyPressed(Keyboard::X) || Keyboard::isKeyPressed(Keyboard::Up)) && is_rotate_cw_bis == 0) {
+
+                is_rotate_cw_bis = -1;
+                rotate_bis = 1;
+            }
+            if(Keyboard::isKeyPressed(Keyboard::Z) && is_rotate_ccw_bis == 0) {
+
+                is_rotate_ccw_bis = -1;
+                rotate_bis = -1;
+            }
+            if(Keyboard::isKeyPressed(Keyboard::Space) && is_harddrop_bis == 0) {
+
+                is_harddrop_bis = -1;
+                harddrop_bis = 1;
+            }
+            if(Keyboard::isKeyPressed(Keyboard::Left) && is_left_bis == 0) {
+
+                is_left_bis = -1;
+                move_left_bis = 1;
+            }
+            if(Keyboard::isKeyPressed(Keyboard::Right) && is_right_bis == 0) {
+
+                is_right_bis = -1;
+                move_right_bis = 1;
+            }
+            if(Keyboard::isKeyPressed(Keyboard::R) && is_restart_bis == 0) {
+
+                is_restart_bis = -1;
+                goto restart_bis;
+            }
+
+            //Dead
+            if(isDeadBis()) {
+
+                goto restart_bis;
+            }
+
+            if(Keyboard::isKeyPressed(Keyboard::Down)) delay_bis = fastdrop_delay_bis;
+
+            //========================= Move =========================
+            key_left_bis = Keyboard::isKeyPressed(Keyboard::Left);
+            key_right_bis = Keyboard::isKeyPressed(Keyboard::Right);
+            if(!key_left_bis && !key_right_bis) das_value_bis = das_bis;
+
+            if(move_right_bis) {
+
+                for(int i = 0; i < 4; i++) {
+
+                    cache_bis[i] = piece_bis[i];
+                    piece_bis[i].x += 1;
+                }
+
+                if(!isCollidedBis()) for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
+                else {
+                    if(lock_count_value_bis > 0) {
+                        lock_count_value_bis--;
+                        lock_delay_value_bis = lock_delay_bis;
+                    }
+                }
+                das_value_bis = das_bis;
+            }
+            if(move_left_bis) {
+                for(int i = 0; i < 4; i++) {
+                    cache_bis[i] = piece_bis[i];
+                    piece_bis[i].x -= 1;
+                }
+                if(!isCollidedBis()) for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
+                else {
+                    if(lock_count_value_bis > 0) {
+                        lock_count_value_bis--;
+                        lock_delay_value_bis = lock_delay_bis;
+                    }
+                }
+                das_value_bis = das_bis;
+            }
+
+            if(das_value_bis <= 0) {
+                for(int i = 0; i < 4; i++) {
+                    cache_bis[i] = piece_bis[i];
+                    piece_bis[i].x += sign(key_right_bis - key_left_bis);
+                }
+                if(!isCollidedBis()) {
+                    if(is_sidehit_bis == 0) {
+                        is_sidehit_bis = 1;
+                    }
+                    for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
+                }
+                else {
+                    is_sidehit_bis = 0;
+                    if(lock_count_value_bis > 0) {
+                        lock_count_value_bis--;
+                        lock_delay_value_bis = lock_delay_bis;
+                    }
+                }
+            }
+            das_value_bis -= clock.getElapsedTime().asSeconds() * 75;
+            //Hold
+            if(holded_bis) {
+                if(hold_bis == -1) {
+                    hold_bis = color_bis;
+                    color_bis = -1;
+                    while(isCollidedBis()) {
+                        for(int i = 0; i < 4; i++) piece_bis[i].y++;
+                    }
+                    for(int i = 0; i < 4; i++) piece_bis[i].y --;
+                    lock_delay_value_bis = -1;
+                    timer_bis = 0;
+                    goto makeNewPiece_bis;
+                }
+                else {
+                    int temp_bis;
+                    temp_bis = color_bis;
+                    color_bis = hold_bis;
+                    hold_bis = temp_bis;
+                    timer_bis = 0;
+                    lock_count_value_bis = lock_count_bis;
+                    lock_delay_value_bis = lock_delay_bis;
+                    choose_piece_bis = color_bis;
+                    for(int i = 0; i < 4; i++) {
+                        piece_bis[i].x = pieces[choose_piece_bis][i] % 2 + 4;
+                        piece_bis[i].y = pieces[choose_piece_bis][i] / 2 + 2;
+                        piece_bis[i].rotation = 0;
+
+                        if(color_bis == J_TETROMINO) piece_bis[i].x --;
+                        if(color_bis == I_TETROMINO) piece_bis[i].y ++;
+
+                    }
+                    for(int i = 0; i < 4; i++) {
+
+                        Piece center_bis = piece_bis[1];
+                        if(color_bis == I_TETROMINO) piece[i].Rotate(center_bis, 1);
+                        if(color_bis == T_TETROMINO) piece[i].Rotate(center_bis, -1);
+                        if(color_bis == S_TETROMINO) piece[i].Rotate(center_bis, -1);
+                        if(color_bis == Z_TETROMINO) piece[i].Rotate(center_bis, -1);
+                        if(color_bis == L_TETROMINO) piece[i].Rotate(center_bis, -1);
+                        if(color_bis == J_TETROMINO) piece[i].Rotate(center_bis, 1);
+                        piece_bis[i].rotation = 1;
+                    }
+                }
+            }
+
+            //HardDrop
+            if(harddrop_bis && start_bis <= 0) {
+                while(isCollidedBis()) {
+                    for(int i = 0; i < 4; i++) piece_bis[i].y++;
+                    createParticleBis(&particles_bis);
+                }
+                for(int i = 0; i < 4; i++) piece_bis[i].y--;
+                lock_delay_value_bis=-1;
+                goto makeNewPiece_bis;
+            }
+
+            //========================= Rotate =========================
+            if(rotate_bis != 0) {
+
+                int before_rotation_bis, after_rotation_bis;
+                for(int i = 0; i < 4; i++) {
+
+                    cache_bis[i] = piece_bis[i];
+                    before_rotation_bis = piece_bis[i].rotation;
+                    if(color_bis == I_TETROMINO) {
+
+                        if(piece_bis[i].rotation == 1) {
+
+                            if(rotate_bis == 1) {
+                                if(i == 0) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
+                                if(i == 2) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
+                                if(i == 3) { piece_bis[i].x+=2, piece_bis[i].y+=2; };
+                            }
+                            else {
+                                if(i == 0) { piece_bis[i].x-=2, piece_bis[i].y+=2; };
+                                if(i == 1) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
+                                if(i == 3) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
+                            }
+                        }
+                        if(piece_bis[i].rotation == 2) {
+
+                            if(rotate_bis == 1) {
+                                if(i == 0) { piece_bis[i].x-=2, piece_bis[i].y+=2; };
+                                if(i == 1) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
+                                if(i == 3) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
+                            }
+                            else {
+                                if(i == 0) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
+                                if(i == 2) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
+                                if(i == 3) { piece_bis[i].x-=2, piece_bis[i].y-=2; };
+                            }
+                        }
+                        if(piece_bis[i].rotation == 3) {
+
+                            if(rotate_bis == 1) {
+                                if(i == 0) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
+                                if(i == 2) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
+                                if(i == 3) { piece_bis[i].x-=2, piece_bis[i].y-=2; };
+                            }
+                            else {
+                                if(i == 0) { piece_bis[i].x+=2, piece_bis[i].y-=2; };
+                                if(i == 1) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
+                                if(i == 3) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
+                            }
+                        }
+                        if(piece_bis[i].rotation == 4) {
+
+                            if(rotate_bis == 1) {
+                                if(i == 0) { piece_bis[i].x+=2, piece_bis[i].y-=2; };
+                                if(i == 1) { piece_bis[i].x+=1, piece_bis[i].y-=1; };
+                                if(i == 3) { piece_bis[i].x-=1, piece_bis[i].y+=1; };
+                            }
+                            else {
+                                if(i == 0) { piece_bis[i].x-=1, piece_bis[i].y-=1; };
+                                if(i == 2) { piece_bis[i].x+=1, piece_bis[i].y+=1; };
+                                if(i == 3) { piece_bis[i].x+=2, piece_bis[i].y+=2; };
+                            }
+                        }
+                        piece_bis[i].rotation += rotate_bis;
+                    }
+                    else if(color_bis != O_TETROMINO) piece_bis[i].Rotate(piece_bis[1], rotate_bis);
+
+                    if(piece_bis[i].rotation > 4) piece_bis[i].rotation = 1;
+                    if(piece_bis[i].rotation < 1) piece_bis[i].rotation = 4;
+
+                    after_rotation_bis = piece_bis[i].rotation;
+                }
+
+                Piece rotation_piece_bis[4];
+                if(color_bis != I_TETROMINO) {
+
+                    if((before_rotation_bis == 1 && after_rotation_bis == 2) || (before_rotation_bis == 3 && after_rotation_bis == 2)) { //1 >> 2 & 3 >> 2
+                        //TEST 2
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                rotation_piece_bis[i].x = piece_bis[i].x;
+                                rotation_piece_bis[i].y = piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += 0;
+                            }
+                        }
+                        //TEST 3
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += -1;
+                            }
+                        }
+                        //TEST 4
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 0;
+                                piece_bis[i].y += 2;
+                            }
+                        }
+                        //TEST 5
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += 2;
+                            }
+                        }
+                    }
+                    if((before_rotation_bis == 2 && after_rotation_bis == 1) || (before_rotation_bis == 2 && after_rotation_bis == 3)) { //2 >> 1 && 2 >> 3
+                        //TEST 2
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                rotation_piece_bis[i].x = piece_bis[i].x;
+                                rotation_piece_bis[i].y = piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += 0;
+                            }
+                        }
+                        //TEST 3
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += 1;
+                            }
+                        }
+                        //TEST 4
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 0;
+                                piece_bis[i].y += -2;
+                            }
+                        }
+                        //TEST 5
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += -2;
+                            }
+                        }
+                    }
+                    if((before_rotation_bis == 3 && after_rotation_bis == 4) || (before_rotation_bis == 1 && after_rotation_bis == 4)) { //3 >> 4 & 1 >> 4
+                        //TEST 2
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                rotation_piece_bis[i].x = piece_bis[i].x;
+                                rotation_piece_bis[i].y = piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += 0;
+                            }
+                        }
+                        //TEST 3
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += -1;
+                            }
+                        }
+                        //TEST 4
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 0;
+                                piece_bis[i].y += 2;
+                            }
+                        }
+                        //TEST 5
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 1;
+                                piece_bis[i].y += 2;
+                            }
+                        }
+                    }
+                    if((before_rotation_bis == 4 && after_rotation_bis == 3) || (before_rotation_bis == 4 && after_rotation_bis == 1)) { //4 >> 3 && 4 >> 1
+                        //TEST 2
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                rotation_piece_bis[i].x = piece_bis[i].x;
+                                rotation_piece_bis[i].y = piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += 0;
+                            }
+                        }
+                        //TEST 3
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += 1;
+                            }
+                        }
+                        //TEST 4
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += 0;
+                                piece_bis[i].y += -2;
+                            }
+                        }
+                        //TEST 5
+                        if(!isCollidedBis()) {
+                            for(int i = 0; i < 4; i++) {
+
+                                piece_bis[i].x = rotation_piece_bis[i].x;
+                                piece_bis[i].y = rotation_piece_bis[i].y;
+                                piece_bis[i].x += -1;
+                                piece_bis[i].y += -2;
+                            }
+                        }
+                    }
+                }
+
+                if(!isCollidedBis()) for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
+                else {
+
+                    if(lock_count_value_bis > 0) {
+
+                        lock_count_value_bis--;
+                        lock_delay_value_bis = lock_delay_bis;
+                    }
+                    if(color_bis == T_TETROMINO) {
+
+                        int corner_count_bis = 0;
+                        if(board_bis[piece_bis[1].y + 1][piece_bis[1].x + 1] != 0 || piece_bis[1].x + 1 >= WIDTH || piece_bis[1].y + 1 >= HEIGHT) corner_count_bis ++;
+                        if(board_bis[piece_bis[1].y + 1][piece_bis[1].x - 1] != 0 || piece_bis[1].x - 1 < 0 || piece_bis[1].y + 1 >= HEIGHT) corner_count_bis ++;
+                        if(board_bis[piece_bis[1].y - 1][piece_bis[1].x + 1] != 0 || piece_bis[1].x + 1 >= WIDTH || piece_bis[1].y - 1 < 0) corner_count_bis ++;
+                        if(board_bis[piece_bis[1].y - 1][piece_bis[1].x - 1] != 0 || piece_bis[1].x - 1 < 0 || piece_bis[1].y + 1 < 0) corner_count_bis ++;
+
+                        if(corner_count_bis >= 3) {
+                            is_tspin_bis = 1;
+                        }
+                    }
+                }
+            }
+
+            //Game Update
+            if(timer_bis > delay_bis) {
+
+                makeNewPiece_bis :
+
+                for(int i = 0; i < 4; i++) {
+                    cache_bis[i] = piece_bis[i];
+                    piece_bis[i].y ++;
+                }
+
+                if(!isCollidedBis() && lock_delay_value_bis < 0) {
+
+                    if(!holded_bis) {
+
+                        createParticleBis(&particles_bis);
+                        createParticleBis(&particles_bis);
+                        createParticleBis(&particles_bis);
+
+                        vector <PieceLock> piece_lock_bis;
+                        for(int i = 0; i < 4; i++) {
+
+                            PieceLock piece_lock_one_bis;
+                            piece_lock_one_bis.x = piece_bis[i].x;
+                            piece_lock_one_bis.y = piece_bis[i].y;
+
+                            piece_lock_bis.push_back(piece_lock_one_bis);
+                        }
+                        pieces_lock_bis.push_back(piece_lock_bis);
+
+                        board_wobble_bis = 7;
+                        all_piece_count_bis ++;
+                    }
+
+                    if(!harddrop_bis && !holded_bis) {
+                    }
+
+                    for(int i = 0; i < 4; i++) board_bis[cache_bis[i].y][cache_bis[i].x] = color_bis + 1;
+                    int choose_piece_bis = seven_bag.at(0);
+                    seven_bag_bis.erase(seven_bag_bis.begin());
+                    if(seven_bag_bis.size() == 0) {
+                        seven_bag_bis = seven_bag_next_bis;
+                        seven_bag_next_bis = generateNewBag();
+                    }
+
+                    color_bis = choose_piece_bis;
+                    for(int i = 0; i < 4; i++) {
+
+                        piece_bis[i].x = pieces[choose_piece_bis][i] % 2 + 4;
+                        piece_bis[i].y = pieces[choose_piece_bis][i] / 2 + 2;
+                        piece_bis[i].rotation = 0;
+
+                        if(color_bis == J_TETROMINO) piece_bis[i].x --;
+                        if(color_bis == I_TETROMINO) piece_bis[i].y ++;
+                    }
+                    for(int i = 0; i < 4; i++) {
+
+                        Piece center_bis = piece_bis[1];
+                        if(color_bis == I_TETROMINO) piece_bis[i].Rotate(center_bis, 1);
+                        if(color_bis == T_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == S_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == Z_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == L_TETROMINO) piece_bis[i].Rotate(center_bis, -1);
+                        if(color_bis == J_TETROMINO) piece_bis[i].Rotate(center_bis, 1);
+                        piece_bis[i].rotation = 1;
+                    }
+
+                    lock_delay_value_bis = lock_delay_bis;
+                    lock_count_value_bis = lock_count_bis;
+                    is_touch_ground_bis = 0;
+
+                    //=====================Clear Lines========================
+                    int line_clear_count_bis = 0;
+                    int checkLine_bis = HEIGHT - 1;
+                    for(int i = HEIGHT - 1; i > 0; i--) {
+
+                        int count_bis = 0;
+                        for(int j = 0; j < WIDTH; j++) {
+
+                            if(board_bis[i][j]) count_bis++;
+                            board_bis[checkLine_bis][j] = board_bis[i][j];
+                        }
+                        if(count_bis < WIDTH) checkLine_bis--;
+                        else line_clear_count_bis++;
+                    }
+                    if(line_clear_count_bis != 0) {
+
+                        line_clear_combo_bis ++;
+                        if(line_clear_count_bis == 4 || is_tspin_bis) {
+                            btb_combo_bis ++;
+
+                            int combo_bis = line_clear_combo_bis - 1;
+                        }
+                        else {
+
+                            if(btb_combo_bis != 0) {
+                               btb_combo_bis = 0;
+                            }
+                            int combo_bis = line_clear_combo_bis - 1;
+                        }
+
+                        all_line_count_bis += line_clear_count_bis;
+                    }
+                    else if(line_clear_combo_bis != 0) {
+                        line_clear_combo_bis = 0;
+                    }
+
+                    int perfect_clear_bis = 1;
+                    for(int i = 0; i < HEIGHT; i++) {
+                        for(int j = 0; j < WIDTH; j++) {
+                            if(board_bis[i][j] != 0) perfect_clear_bis = 0;
+                        }
+                    }
+                    is_tspin_bis = 0;
+                }
+                else if(!isCollidedBis()) {
+
+                    for(int i = 0; i < 4; i++) piece_bis[i] = cache_bis[i];
+                }
+                else {
+
+                    lock_count_value_bis = lock_count_bis;
+
+                    if(Keyboard::isKeyPressed(Keyboard::Down)) {
+
+                        createParticleBis(&particles_bis);
+                        createParticleBis(&particles_bis);
+                    }
+                }
+                timer_bis = 0;
+            }
+            board_wobble_bis += 100 * ((-board_wobble_bis) / 15) * time;
+
+            //Update Ghost
+            for(int i = 0; i < 4; i++) {
+
+                ghost_bis[i].x = piece_bis[i].x;
+                ghost_bis[i].y = piece_bis[i].y;
+            }
+            for(int i = 0; i < 4; i++) {
+
+                while(isCollidedGhostBis()) {
+                    for(int i = 0; i < 4; i++) ghost_bis[i].y ++;
+                }
+
+                for(int i = 0; i < 4; i++) ghost_bis[i].y --;
+            }
+
+            move_x_bis = 0;
+            rotate_bis = 0;
+            delay_bis = 0.5;
+            harddrop_bis = 0;
+            holded_bis = 0;
+            move_left_bis = 0;
+            move_right_bis = 0;
+
+            //Draw Backboard
+            RectangleShape backboard_shape_bis;
+            backboard_shape_bis.setSize(Vector2f(320, 650));
+            backboard_shape_bis.setFillColor(Color::White);
+            backboard_shape_bis.setPosition(790, 20 + board_wobble_bis);
+            window.draw(backboard_shape_bis);
+
+            //Draw Grid
+            board_s_bis.setPosition(800, -30 + board_wobble_bis);
+            window.draw(board_s_bis);
+
+            //Draw Das Bar
+            float das_progress_bis = max((double)0, (double)(lock_delay_value_bis / lock_delay_bis));
+
+            RectangleShape das_bar_shape_bis;
+            das_bar_shape_bis.setSize(Vector2f(das_progress_bis * 320, 8));
+            das_bar_shape_bis.setFillColor(Color::White);
+            das_bar_shape_bis.setPosition(790, 700 + board_wobble_bis);
+            window.draw(das_bar_shape_bis);
+
+            //Draw Lock Count
+            CircleShape lock_count_circle_bis;
+            lock_count_circle_bis.setRadius(6);
+            lock_count_circle_bis.setFillColor(Color::White);
+            for(int i = 0; i < lock_count_value_bis; i++) {
+
+                lock_count_circle_bis.setPosition(791 + (i * 23.5), 680 + board_wobble_bis);
+                window.draw(lock_count_circle_bis);
+            }
+
+            //Draw Hold
+            s_bis.setColor(Color(255, 255, 255, 255));
+            if(hold_bis != -1) {
+
+                Piece hold_piece_bis[4];
+                int hold_piece_choose_bis;
+                hold_piece_choose_bis = hold_bis;
+
+                for(int j = 0; j < 4; j++) {
+
+                    hold_piece_bis[j].x = pieces[hold_piece_choose_bis][j] % 2 + 4;
+                    hold_piece_bis[j].y = pieces[hold_piece_choose_bis][j] / 2 + 3;
+
+                    if(hold == J_TETROMINO) hold_piece_bis[j].x --;
+                }
+                for(int j = 0; j < 4; j++) {
+
+                    Piece center_bis = hold_piece_bis[1];
+                    if(hold_bis == I_TETROMINO) hold_piece_bis[j].Rotate(center_bis, 1);
+                    if(hold_bis == T_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
+                    if(hold_bis == S_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
+                    if(hold_bis == Z_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
+                    if(hold_bis == L_TETROMINO) hold_piece_bis[j].Rotate(center_bis, -1);
+                    if(hold_bis == J_TETROMINO) hold_piece_bis[j].Rotate(center_bis, 1);
+                }
+
+                for(int j = 0; j < 4; j++) {
+
+                    s_bis.setTextureRect(IntRect(hold_bis*texture_size_bis, 0, texture_size_bis, texture_size_bis));
+                    int x_offset_bis = 0;
+                    if(hold_bis == I_TETROMINO || hold_bis == O_TETROMINO) x_offset_bis = 140;
+                    s_bis.setPosition(hold_piece_bis[j].x * texture_size_bis - 70 - x_offset_bis, hold_piece_bis[j].y * texture_size_bis - 10);
+                    window.draw(s_bis);
+                }
+            }
+
+            //Draw Next Pieces
+            s_bis.setColor(Color(255, 255, 255, 255));
+            for(int i = 0; i < seven_bag_bis.size() + seven_bag_next_bis.size(); i++) {
+
+                if(i < 5) {
+
+                    Piece next_piece_bis[4];
+                    int next_piece_choose_bis;
+                    if(i < seven_bag_bis.size()) next_piece_choose_bis = seven_bag_bis.at(i);
+                    else next_piece_choose_bis = seven_bag_next_bis.at(i - seven_bag_bis.size());
+
+                    int next_color_bis = next_piece_choose_bis;
+                    for(int j = 0; j < 4; j++) {
+
+                        next_piece_bis[j].x = pieces[next_piece_choose_bis][j] % 2 + 4;
+                        next_piece_bis[j].y = pieces[next_piece_choose_bis][j] / 2 + 3;
+
+                        if(next_color_bis == J_TETROMINO) next_piece_bis[j].x --;
+                    }
+                    for(int j = 0; j < 4; j++) {
+
+                        Piece center_bis = next_piece_bis[1];
+                        if(next_color_bis == I_TETROMINO) next_piece_bis[j].Rotate(center_bis, 1);
+                        if(next_color_bis == T_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
+                        if(next_color_bis == S_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
+                        if(next_color_bis == Z_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
+                        if(next_color_bis == L_TETROMINO) next_piece_bis[j].Rotate(center_bis, -1);
+                        if(next_color_bis == J_TETROMINO) next_piece_bis[j].Rotate(center_bis, 1);
+                    }
+
+                    for(int j = 0; j < 4; j++) {
+
+                        s_bis.setTextureRect(IntRect(next_color_bis*texture_size_bis, 0, texture_size_bis, texture_size_bis));
+                        int x_offset_bis = 0;
+                        if(next_color_bis == I_TETROMINO || next_color_bis == O_TETROMINO) x_offset_bis = 15;
+                        s_bis.setPosition(next_piece_bis[j].x * texture_size_bis + 1050 - x_offset_bis, next_piece_bis[j].y * texture_size_bis - 10 + (90 * i));
+                        window.draw(s_bis);
+                    }
+                }
+            }
+
+            //Draw Placed Pieces
+            for(int i = 0; i < HEIGHT; i++) {
+
+                for(int j = 0; j < WIDTH; j++) {
+
+                    s_bis.setColor(Color(255, 255, 255, 255));
+                    if(board_bis[i][j] == 0) continue;
+                    s_bis.setTextureRect(IntRect((board[i][j] - 1)*texture_size_bis, 0, texture_size_bis, texture_size_bis));
+                    s_bis.setPosition(j * texture_size_bis + 800, i * texture_size_bis - 90 + board_wobble_bis);
+                    window.draw(s_bis);
+                }
+            }
+
+            //Draw Piece Lock
+
+            for(int i = 0; i < pieces_lock_bis.size(); i++) {
+
+                for(int j = 0; j < 4; j++) {
+                    pieces_lock_bis.at(i).at(j).animation += time * FRAMERATE * 4;
+                }
+
+                for(int j = 0; j < 4; j++) {
+
+                    if(pieces_lock_bis.at(i).at(j).animation >= 67) {
+
+                        pieces_lock_bis.erase(pieces_lock_bis.begin() + i);
+                        break;
+                    }
+                }
+            }
+
+            //Draw Ghost
+            s_ghost_bis.setTextureRect(IntRect(color_bis*texture_size_bis, 0, texture_size_bis, texture_size_bis));
+            for(int i = 0; i < 4; i++) {
+
+                s_ghost_bis.setPosition(piece_bis[i].x * texture_size_bis + 800, ghost_bis[i].y * texture_size_bis - 90 + board_wobble_bis);
+                window.draw(s_ghost_bis);
+            }
+
+            //Draw Pieces
+            piece_indicator_shape_alpha_bis = (sin(game_elapsed_time.getElapsedTime().asSeconds() * 10) + 1) * 30;
+            RectangleShape piece_indicator_shape_bis;
+            piece_indicator_shape_bis.setSize(Vector2f(30, 30));
+            piece_indicator_shape_bis.setFillColor(Color(255, 255, 255, piece_indicator_shape_alpha_bis));
+
+            float piece_alpha_bis = max((double)0, (double)(lock_delay_value_bis / lock_delay_bis));
+            for(int i = 0; i < 4; i++) {
+
+                s_bis.setTextureRect(IntRect(7*texture_size_bis, 0, texture_size_bis, texture_size_bis));
+                s_bis.setColor(Color(255, 255, 255, 255));
+                s_bis.setPosition(piece_bis[i].x * texture_size_bis + 800, piece_bis[i].y * texture_size_bis - 90 + board_wobble_bis);
+                window.draw(s_bis);
+
+                s_bis.setTextureRect(IntRect(color_bis*texture_size_bis, 0, texture_size_bis, texture_size_bis));
+                s_bis.setColor(Color(255, 255, 255, piece_alpha_bis * 255));
+                s_bis.setPosition(piece_bis[i].x * texture_size_bis + 800, piece_bis[i].y * texture_size_bis - 90 + board_wobble_bis);
+                window.draw(s_bis);
+
+                piece_indicator_shape_bis.setPosition(piece_bis[i].x * texture_size_bis + 800, piece_bis[i].y * texture_size_bis - 90 + board_wobble_bis);
+                window.draw(piece_indicator_shape_bis);
+            }
+
+            //Draw Particle
             for(int i = 0; i < particles_bis.size(); i++) {
 
                 particles_bis.at(i).update(time);
@@ -1637,15 +2083,11 @@ int main() {
             }
 
             //Draw Backboard
-            backboard_shape.setSize(Vector2f(320, 20));
-            backboard_shape.setFillColor(Color::Black);
-            backboard_shape.setPosition(140, 0 + board_wobble);
-            window.draw(backboard_shape);
 
-            backboard_shape.setSize(Vector2f(320, 10));
-            backboard_shape.setFillColor(Color::White);
-            backboard_shape.setPosition(140, 10 + board_wobble);
-            window.draw(backboard_shape);
+            backboard_shape_bis.setSize(Vector2f(320, 10));
+            backboard_shape_bis.setFillColor(Color::White);
+            backboard_shape_bis.setPosition(790, 10 + board_wobble_bis);
+            window.draw(backboard_shape_bis);
 
             window.display();
 
